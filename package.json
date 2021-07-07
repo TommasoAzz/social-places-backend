@@ -16,7 +16,7 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/riccardopreite/appServer.git"
+    "url": "git+https://github.com/riccardopreite/sistemiCA-server.git"
   },
   "keywords": [
     "firebase-admin",
@@ -29,7 +29,7 @@
   "author": "riccardo preite",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/riccardopreite/appServer/issues"
+    "url": "https://github.com/riccardopreite/sistemiCA-server/issues"
   },
-  "homepage": "https://github.com/riccardopreite/appServer#readme"
+  "homepage": "https://github.com/riccardopreite/sistemiCA-server/blob/main/README.md"
 }

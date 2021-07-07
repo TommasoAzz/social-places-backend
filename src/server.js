@@ -1,6 +1,6 @@
 var admin = require("firebase-admin");
 const fs = require("fs");
-var serviceAccount = require("./findmycar-271019-firebase-adminsdk-q91xw-6ce22b9fde.json");
+var serviceAccount = require("../findmycar-271019-firebase-adminsdk-q91xw-6ce22b9fde.json");
 var https = require("https");
 admin.initializeApp({
  credential: admin.credential.cert(serviceAccount),
