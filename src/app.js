@@ -1,17 +1,19 @@
-var admin = require("firebase-admin");
+var firebaseAdmin = require("firebase-admin");
 const fs = require("fs");
 var serviceAccount = require("../findmycar-271019-firebase-adminsdk-q91xw-6ce22b9fde.json");
 var https = require("https");
-admin.initializeApp({
- credential: admin.credential.cert(serviceAccount),
- databaseURL: "https://findmycar-271019.firebaseio.com"
-});
-const db = admin.firestore();
+const dotenv = require('dotenv').config()
 const express = require('express'),
 http = require('http'),
 app = express(),
 server = http.createServer(app),
 io = require('socket.io')(server);
+
+firebaseAdmin.initializeApp({
+ credential: firebaseAdmin.credential.cert(serviceAccount),
+ databaseURL: "https://findmycar-271019.firebaseio.com"
+});
+const db = firebaseAdmin.firestore();
 var carInterval = {}
 var carIntervalExpired = {}
 var liveFriendInterval = {}
