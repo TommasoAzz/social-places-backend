@@ -4,13 +4,13 @@ const pointOfInterests = require('../service/pointofinterests');
 
 router.get('/getPoiFromFriend', (req, res) => {
     const body = req.body;
-    let friend = Friend(body.friend);
+    let friend = new Friend(body.friend);
 
     pointOfInterests.getPOIsFromFriend(friend);
 });
 router.get('/poi', (req, res) => {
     const body = req.body;
-    let friend = Friend(body.friend);
+    let friend = new Friend(body.friend);
 
     pointOfInterests.getPOIsFromFriend(friend);
 });
