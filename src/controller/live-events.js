@@ -3,7 +3,7 @@ let router = express.Router()
 let liveEvents = require('../service/live-events');
 
 
-router.post('/startLive', (req, res) => {
+router.get('/startLive', (req, res) => {
     const body = req.body;
 
     let addLiveEvent = new AddLiveEvent(body.expireAfter, body.owner, body.name, body.address);

@@ -3,7 +3,7 @@ let router = express.Router();
 
 const friendshipService = require('../service/friendship');
 
-router.post('/addFriend', (req, res) => {
+router.get('/addFriend', (req, res) => {
     const body = req.body;
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
     
@@ -16,7 +16,7 @@ router.post('/friendship/add', (req, res) => {
     friendshipService.sendAddFriendshipRequest(addFriendshipRequest);
 });
 
-router.post('/confirmFriend', (req, res) => {
+router.get('/confirmFriend', (req, res) => {
     const body = req.body;
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
     
@@ -29,7 +29,7 @@ router.post('/friendship/confirm', (req, res) => {
     friendshipService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
 });
 
-router.post('/removeFriend', (req, res) => {
+router.get('/removeFriend', (req, res) => {
     const body = req.body;
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 
