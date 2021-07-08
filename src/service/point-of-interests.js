@@ -1,3 +1,5 @@
+const Friend = require('../model/friend');
+
 class PointOfInterests {
     /**
      * Retrieves the point of interests of a user.

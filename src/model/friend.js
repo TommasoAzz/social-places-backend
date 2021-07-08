@@ -5,7 +5,7 @@ class Friend {
      * @param {string} friendUsername Username of the friend.
      */
     constructor(friendUsername) {
-        if(!(typeof(friendUsername) === "string")) {
+        if(!(typeof(friendUsername) === 'string')) {
             console.error(`Argument ${friendUsername} is not a string`);
             throw TypeError(`Argument ${friendUsername} is not a string`);
         }

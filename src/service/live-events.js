@@ -1,3 +1,5 @@
+const AddLiveEvent = require('../model/add-live-event');
+
 class LiveEvents {
     /**
      * Publishes a new live event.

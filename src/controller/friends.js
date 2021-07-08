@@ -1,3 +1,6 @@
+const AddFriendshipRequest = require('../model/add-friendship-request');
+const AddFriendshipConfirmation = require('../model/add-friendship-confirmation');
+const RemoveFriendshipRequest = require('../model/remove-friendship-request');
 let express = require('express');
 let router = express.Router();
 

@@ -8,19 +8,19 @@ class AddLiveEvent {
      * @param {string} address Address in which the event takes place.
      */
     constructor(expireAfter, owner, name, address) {
-        if(!(typeof(expireAfter) === "number")) {
+        if(!(typeof(expireAfter) === 'number')) {
             console.error(`Argument ${expireAfter} is not a number`);
             throw TypeError(`Argument ${expireAfter} is not a number`);
         }
-        if(!(typeof(owner) === "string")) {
+        if(!(typeof(owner) === 'string')) {
             console.error(`Argument ${owner} is not a string`);
             throw TypeError(`Argument ${owner} is not a string`);
         }
-        if(!(typeof(name) === "string")) {
+        if(!(typeof(name) === 'string')) {
             console.error(`Argument ${name} is not a string`);
             throw TypeError(`Argument ${name} is not a string`);
         }
-        if(!(typeof(address) === "string")) {
+        if(!(typeof(address) === 'string')) {
             console.error(`Argument ${address} is not a string`);
             throw TypeError(`Argument ${address} is not a string`);
         }

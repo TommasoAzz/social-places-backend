@@ -1,3 +1,7 @@
+const AddFriendshipRequest = require('../model/add-friendship-request');
+const AddFriendshipConfirmation = require('../model/add-friendship-confirmation');
+const RemoveFriendshipRequest = require('../model/remove-friendship-request');
+
 class Friendship {
     /**
      * Sends a request for a friendship as indicated in `friendshipRequest`.

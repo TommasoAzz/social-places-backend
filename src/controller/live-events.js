@@ -1,5 +1,6 @@
+const AddLiveEvent = require('../model/add-live-event');
 let express = require('express');
-let router = express.Router()
+let router = express.Router();
 let liveEvents = require('../service/live-events');
 
 
