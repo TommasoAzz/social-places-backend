@@ -1,19 +1,31 @@
+/* eslint-disable no-unused-vars */
 const AddFriendshipRequest = require('../model/add-friendship-request');
 const AddFriendshipConfirmation = require('../model/add-friendship-confirmation');
 const RemoveFriendshipRequest = require('../model/remove-friendship-request');
 
-class Friendship {
+const UserPersistence = require('../persistence/user-persistence');
+
+class FriendshipService {
     /**
      * Sends a request for a friendship as indicated in `friendshipRequest`.
      * 
      * @param {AddFriendshipRequest} friendshipRequest the request itself.
      */
-    static sendAddFriendshipRequest(friendshipRequest) {
+    static async sendAddFriendshipRequest(friendshipRequest) {
         if(!(typeof(friendshipRequest) === AddFriendshipRequest)) {
             console.error(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
             throw TypeError(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
         }
-        // Resto del codice
+
+        friendshipRequest.receiver = friendshipRequest.receiver.replace('@gmail.com', '');
+        friendshipRequest.sender = friendshipRequest.sender.replace('@gmail.com', '');
+        
+        const receiver = await UserPersistence.getUser(friendshipRequest.receiver);
+        
+        // eslint-disable-next-line no-unused-vars
+        if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0) {
+            await UserPersistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
+        }
     }
 
     /**
@@ -21,12 +33,22 @@ class Friendship {
      * 
      * @param {AddFriendshipConfirmation} friendshipConfirmation the confirmation itself.
      */
-    static sendAddFriendshipConfirmation(friendshipConfirmation) {
+    static async sendAddFriendshipConfirmation(friendshipConfirmation) {
         if(!(typeof(friendshipConfirmation) === AddFriendshipConfirmation)) {
             console.error(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
             throw TypeError(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
         }
-        // Resto del codice
+        
+        friendshipConfirmation.receiverOfTheFriendshipRequest = friendshipConfirmation.receiverOfTheFriendshipRequest.replace('@gmail.com', '');
+        friendshipConfirmation.senderOfTheFriendshipRequest = friendshipConfirmation.senderOfTheFriendshipRequest.replace('@gmail.com', '');
+        
+        const receiver = await UserPersistence.getUser(friendshipConfirmation.receiverOfTheFriendshipRequest);
+        
+        // eslint-disable-next-line no-unused-vars
+        if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.sender).length == 0) {
+            await UserPersistence.addFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+            await UserPersistence.addFriend(friendshipConfirmation.receiverOfTheFriendshipRequest, friendshipConfirmation.senderOfTheFriendshipRequest);
+        }
     }
 
     /**
@@ -34,13 +56,18 @@ class Friendship {
      * 
      * @param {RemoveFriendshipRequest} friendshipRemoval 
      */
-    static sendRemoveFriendshipRequest(friendshipRemoval) {
+    static async sendRemoveFriendshipRequest(friendshipRemoval) {
         if(!(typeof(friendshipRemoval) === RemoveFriendshipRequest)) {
             console.error(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
             throw TypeError(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
         }
-        // Resto del codice
+        
+        friendshipRemoval.receiver = friendshipRemoval.receiver.replace('@gmail.com', '');
+        friendshipRemoval.sender = friendshipRemoval.sender.replace('@gmail.com', '');
+
+        await UserPersistence.removeFriend(friendshipRemoval.sender, friendshipRemoval.receiver);
+        await UserPersistence.removeFriend(friendshipRemoval.receiver, friendshipRemoval.sender);
     }
 }
 
-module.exports = Friendship;
+module.exports = FriendshipService;

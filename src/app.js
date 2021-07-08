@@ -4,10 +4,7 @@ var serviceAccount = require('../findmycar-271019-firebase-adminsdk-q91xw-6ce22b
 var https = require('https');
 const dotenv = require('dotenv').config();
 const express = require('express');
-const http = require('http');
 const app = express();
-const server = http.createServer(app);
-const io = require('socket.io')(server);
 
 firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount),
