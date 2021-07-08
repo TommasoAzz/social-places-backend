@@ -31,3 +31,5 @@ class AddLiveEvent {
         this.address = address;
     }
 }
+
+module.exports = AddLiveEvent;

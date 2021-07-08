@@ -19,3 +19,5 @@ class AddFriendshipRequest {
         this.sender = sender;
     }
 }
+
+module.exports = AddFriendshipRequest;

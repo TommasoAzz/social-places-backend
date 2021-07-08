@@ -19,3 +19,5 @@ class RemoveFriendshipRequest {
         this.sender = sender;
     }
 }
+
+module.exports = RemoveFriendshipRequest;

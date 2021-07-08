@@ -35,7 +35,7 @@ router.get('/removeFriend', (req, res) => {
 
     friendshipService.sendRemoveFriendshipRequest(removeFriendshipRequest);
 });
-router.post('/friendship/remove', (req, res) => {
+router.delete('/friendship/remove', (req, res) => {
     const body = req.body;
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 

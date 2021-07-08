@@ -2,8 +2,10 @@ const friends = require('./friends');
 const liveEvents = require('./live-events');
 const poi = require('./poi');
 
-module.exports = {
+const index = {
     friends,
     liveEvents,
     poi
 };
+
+module.exports = index;

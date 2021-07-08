@@ -19,3 +19,5 @@ class AddFriendshipConfirmation {
         this.senderOfTheFriendshipRequest = senderOfTheFriendshipRequest;
     }
 }
+
+module.exports = AddFriendshipConfirmation;

@@ -13,3 +13,5 @@ class Friend {
         this.friendUsername = friendUsername;
     }
 }
+
+module.exports = Friend;

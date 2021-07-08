@@ -14,7 +14,9 @@
   "version": "1.0.0",
   "description": "server app in nodejs for android app",
   "main": "server.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^7.30.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/riccardopreite/sistemiCA-server.git"
