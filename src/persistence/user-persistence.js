@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+const FirebaseFirestore = require('firebase-admin').firestore;
 const Friend = require('../model/friend');
 const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
@@ -6,14 +7,14 @@ const Marker = require('../model/marker');
 const FriendRequest = require('../model/friend-request');
 
 class UserPersistence {
-    static connection;
+    static _connection;
     
     /**
      * Sets the connection to the Firestore instance.
-     * @param {FirebaseFirestore.Firestore} connection the connection already established with Firestore.
+     * @param {FirebaseFirestore.Firestore} firestoreConnection the connection already established with Firestore.
      */
-    static setConnection(firestoreConnection) {
-        this.connection = firestoreConnection;
+    static set connection(firestoreConnection) {
+        UserPersistence._connection = firestoreConnection;
     }
 
     /**
@@ -47,7 +48,7 @@ class UserPersistence {
         const expiredliveEvents = await this.connection.collection('user').doc(userId).collection('timedLiveExpired').get();
         const friendRequests = await this.connection.collection('user').doc(userId).collection('friendrequest').get();
 
-        return User(
+        return new User(
             userId,
             friends.size > 0 ? friends.docs.map(friendFromFirestore) : [],
             liveEvents.size > 0 ? liveEvents.docs.map(liveEventFromFirestore) : [],
@@ -115,7 +116,7 @@ function friendFromFirestore(document, _, __) {
         return null;
     }
 
-    return Friend(document.id, document.data().friend);
+    return new Friend(document.id, document.data().friend);
 }
 
 /**
@@ -129,7 +130,7 @@ function liveEventFromFirestore(document, _, __) {
         return null;
     }
 
-    return LiveEvent(
+    return new LiveEvent(
         document.id,
         document.data().addr,
         document.data().name,
@@ -150,7 +151,7 @@ function markerFromFirestore(document, _, __) {
         return null;
     }
 
-    return Marker(
+    return new Marker(
         document.id,
         document.data().addr,
         document.data().cont,
@@ -174,5 +175,5 @@ function friendRequestFromFirestore(document, _, __) {
         return null;
     }
 
-    return FriendRequest(document.data().origin);
+    return new FriendRequest(document.data().origin);
 }
