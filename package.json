@@ -6,7 +6,7 @@
     "https": "^1.0.0"
   },
   "scripts": {
-    "compile":  "npx tsc",
+    "compile": "npx tsc",
     "start": "node src/app.js"
   },
   "name": "appserver",

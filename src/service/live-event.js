@@ -1,18 +1,21 @@
-const AddLiveEvent = require('../model/add-live-event');
+const AddLiveEvent = require('../model/request-body/add-live-event');
 
-class LiveEvents {
+const UserPersistence = require('../persistence/user-persistence');
+
+class LiveEventService {
     /**
      * Publishes a new live event.
      * 
      * @param {AddLiveEvent} liveEvent the new live event.
      */
-    static addLiveEvent(liveEvent) {
+    static async addLiveEvent(liveEvent)  {
         if(!(typeof(liveEvent) === AddLiveEvent)) {
             console.error(`Argument ${liveEvent} is not of type AddLiveEvent`);
             throw TypeError(`Argument ${liveEvent} is not of type AddLiveEvent`);
         }
-        // Restante codice
+        
+        await UserPersistence.addLiveEvent(liveEvent);
     }
 }
 
-module.exports = LiveEvents;
+module.exports = LiveEventService;

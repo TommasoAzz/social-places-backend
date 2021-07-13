@@ -6,43 +6,28 @@ let router = express.Router();
 
 const friendshipService = require('../service/friendship');
 
-router.get('/addFriend', (req, res) => {
+router.post('/friendship/add', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - POST /friendship/add');
     const body = req.body;
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
     
-    friendshipService.sendAddFriendshipRequest(addFriendshipRequest);
-});
-router.post('/friendship/add', (req, res) => {
-    const body = req.body;
-    let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
-    
-    friendshipService.sendAddFriendshipRequest(addFriendshipRequest);
+    await friendshipService.sendAddFriendshipRequest(addFriendshipRequest);
 });
 
-router.get('/confirmFriend', (req, res) => {
+router.post('/friendship/confirm', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - POST /friendship/confirm');
     const body = req.body;
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
     
-    friendshipService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
-});
-router.post('/friendship/confirm', (req, res) => {
-    const body = req.body;
-    let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
-    
-    friendshipService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
+    await friendshipService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
 });
 
-router.get('/removeFriend', (req, res) => {
+router.delete('/friendship/remove', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - DELETE /friendship/remove');
     const body = req.body;
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 
-    friendshipService.sendRemoveFriendshipRequest(removeFriendshipRequest);
-});
-router.delete('/friendship/remove', (req, res) => {
-    const body = req.body;
-    let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
-
-    friendshipService.sendRemoveFriendshipRequest(removeFriendshipRequest);
+    await friendshipService.sendRemoveFriendshipRequest(removeFriendshipRequest);
 });
 
 module.exports = router;

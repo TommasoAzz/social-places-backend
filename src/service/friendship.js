@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-const AddFriendshipRequest = require('../model/add-friendship-request');
-const AddFriendshipConfirmation = require('../model/add-friendship-confirmation');
-const RemoveFriendshipRequest = require('../model/remove-friendship-request');
+const AddFriendshipRequest = require('../model/request-body/add-friendship-request');
+const AddFriendshipConfirmation = require('../model/request-body/add-friendship-confirmation');
+const RemoveFriendshipRequest = require('../model/request-body/remove-friendship-request');
 
 const UserPersistence = require('../persistence/user-persistence');
 
@@ -24,6 +24,7 @@ class FriendshipService {
         
         // eslint-disable-next-line no-unused-vars
         if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0) {
+            // No friendship with the receiver user therefore a friend request can be sent.
             await UserPersistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
         }
     }
@@ -39,15 +40,17 @@ class FriendshipService {
             throw TypeError(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
         }
         
+        // The receiver of the friendship request is the current sender.
         friendshipConfirmation.receiverOfTheFriendshipRequest = friendshipConfirmation.receiverOfTheFriendshipRequest.replace('@gmail.com', '');
+        // The sender of the friendship request is the current receiver.
         friendshipConfirmation.senderOfTheFriendshipRequest = friendshipConfirmation.senderOfTheFriendshipRequest.replace('@gmail.com', '');
         
-        const receiver = await UserPersistence.getUser(friendshipConfirmation.receiverOfTheFriendshipRequest);
+        const currentReceiver = await UserPersistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
         
         // eslint-disable-next-line no-unused-vars
-        if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.sender).length == 0) {
-            await UserPersistence.addFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+        if(currentReceiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.senderOfTheFriendshipRequest).length == 0) {
             await UserPersistence.addFriend(friendshipConfirmation.receiverOfTheFriendshipRequest, friendshipConfirmation.senderOfTheFriendshipRequest);
+            await UserPersistence.addFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
         }
     }
 

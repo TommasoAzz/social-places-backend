@@ -1,22 +1,16 @@
 const AddLiveEvent = require('../model/add-live-event');
 let express = require('express');
 let router = express.Router();
-let liveEvents = require('../service/live-events');
+let liveEvent = require('../service/live-event');
 
 
-router.get('/startLive', (req, res) => {
+router.post('/live-events/add', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - POST /live-events/add');
     const body = req.body;
 
     let addLiveEvent = new AddLiveEvent(body.expireAfter, body.owner, body.name, body.address);
 
-    liveEvents.addLiveEvent(addLiveEvent);
-});
-router.post('/live-events/add', (req, res) => {
-    const body = req.body;
-
-    let addLiveEvent = new AddLiveEvent(body.expireAfter, body.owner, body.name, body.address);
-
-    liveEvents.addLiveEvent(addLiveEvent);
+    await liveEvent.addLiveEvent(addLiveEvent);
 });
 
 module.exports = router;
