@@ -1,4 +1,4 @@
-const Friend = require('../model/friend');
+const Friend = require('../model/request-body/friend');
 // eslint-disable-next-line no-unused-vars
 const Marker = require('../model/marker');
 
@@ -16,7 +16,7 @@ class PointOfInterestService {
             throw TypeError(`Argument ${friend} is not of type Friend`);
         }
         
-        await UserPersistence.getPOIsOfUser(friend.friendUsername);
+        return await UserPersistence.getPOIsOfUser(friend.friendUsername);
     }
 }
 

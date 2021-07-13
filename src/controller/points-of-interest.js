@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
 
     const markers = await pointOfInterest.getPOIsFromFriend(friend);
     
-    res.json(markers);
+    res.json(markers).status(200).send();
 });
 
 module.exports = router;

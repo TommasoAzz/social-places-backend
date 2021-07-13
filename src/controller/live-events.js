@@ -11,6 +11,8 @@ router.post('/add', async (req, res) => {
     let addLiveEvent = new AddLiveEvent(body.expireAfter, body.owner, body.name, body.address);
 
     await liveEvent.addLiveEvent(addLiveEvent);
+
+    res.status(200).send();
 });
 
 module.exports = router;

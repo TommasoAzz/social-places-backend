@@ -165,11 +165,7 @@ class UserPersistence {
      */
     static async getPOIsOfUser(username) {
         const pois = await this._connection.collection(this._usersDoc).doc(username).collection(this._poisDoc).get();
-        const markers = [];
-        if(pois.empty) {
-            markers.push(pois.docs.map(markerFromFirestore));
-        }
-        return markers;
+        return pois.docs.map(markerFromFirestore);
     }
 }
 

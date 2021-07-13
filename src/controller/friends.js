@@ -13,6 +13,8 @@ router.post('/add', async (req, res) => {
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
     
     await friendService.sendAddFriendshipRequest(addFriendshipRequest);
+    
+    res.status(200).send();
 });
 
 router.post('/confirm', async (req, res) => {
@@ -21,6 +23,8 @@ router.post('/confirm', async (req, res) => {
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
     
     await friendService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
+
+    res.status(200).send();
 });
 
 router.delete('/remove', async (req, res) => {
@@ -29,6 +33,8 @@ router.delete('/remove', async (req, res) => {
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 
     await friendService.sendRemoveFriendshipRequest(removeFriendshipRequest);
+
+    res.status(200).send();
 });
 
 module.exports = router;
