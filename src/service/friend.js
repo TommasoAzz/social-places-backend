@@ -5,14 +5,14 @@ const RemoveFriendshipRequest = require('../model/request-body/remove-friendship
 
 const UserPersistence = require('../persistence/user-persistence');
 
-class FriendshipService {
+class FriendService {
     /**
      * Sends a request for a friendship as indicated in `friendshipRequest`.
      * 
      * @param {AddFriendshipRequest} friendshipRequest the request itself.
      */
     static async sendAddFriendshipRequest(friendshipRequest) {
-        if(!(typeof(friendshipRequest) === AddFriendshipRequest)) {
+        if(!(friendshipRequest instanceof AddFriendshipRequest)) {
             console.error(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
             throw TypeError(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
         }
@@ -35,7 +35,7 @@ class FriendshipService {
      * @param {AddFriendshipConfirmation} friendshipConfirmation the confirmation itself.
      */
     static async sendAddFriendshipConfirmation(friendshipConfirmation) {
-        if(!(typeof(friendshipConfirmation) === AddFriendshipConfirmation)) {
+        if(!(friendshipConfirmation instanceof AddFriendshipConfirmation)) {
             console.error(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
             throw TypeError(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
         }
@@ -60,7 +60,7 @@ class FriendshipService {
      * @param {RemoveFriendshipRequest} friendshipRemoval 
      */
     static async sendRemoveFriendshipRequest(friendshipRemoval) {
-        if(!(typeof(friendshipRemoval) === RemoveFriendshipRequest)) {
+        if(!(friendshipRemoval instanceof RemoveFriendshipRequest)) {
             console.error(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
             throw TypeError(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
         }
@@ -73,4 +73,4 @@ class FriendshipService {
     }
 }
 
-module.exports = FriendshipService;
+module.exports = FriendService;

@@ -1,10 +1,10 @@
-const AddLiveEvent = require('../model/add-live-event');
+const AddLiveEvent = require('../model/request-body/add-live-event');
 let express = require('express');
 let router = express.Router();
 let liveEvent = require('../service/live-event');
 
 
-router.post('/live-events/add', async (req, res) => {
+router.post('/add', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - POST /live-events/add');
     const body = req.body;
 

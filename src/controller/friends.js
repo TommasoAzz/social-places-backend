@@ -1,33 +1,34 @@
-const AddFriendshipRequest = require('../model/add-friendship-request');
-const AddFriendshipConfirmation = require('../model/add-friendship-confirmation');
-const RemoveFriendshipRequest = require('../model/remove-friendship-request');
+const AddFriendshipRequest = require('../model/request-body/add-friendship-request');
+const AddFriendshipConfirmation = require('../model/request-body/add-friendship-confirmation');
+const RemoveFriendshipRequest = require('../model/request-body/remove-friendship-request');
 let express = require('express');
 let router = express.Router();
 
-const friendshipService = require('../service/friendship');
+const friendService = require('../service/friend');
 
-router.post('/friendship/add', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - POST /friendship/add');
+router.post('/add', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - POST /friends/add');
     const body = req.body;
+    console.log(body);
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
     
-    await friendshipService.sendAddFriendshipRequest(addFriendshipRequest);
+    await friendService.sendAddFriendshipRequest(addFriendshipRequest);
 });
 
-router.post('/friendship/confirm', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - POST /friendship/confirm');
+router.post('/confirm', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - POST /friends/confirm');
     const body = req.body;
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
     
-    await friendshipService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
+    await friendService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
 });
 
-router.delete('/friendship/remove', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - DELETE /friendship/remove');
+router.delete('/remove', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - DELETE /friends/remove');
     const body = req.body;
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 
-    await friendshipService.sendRemoveFriendshipRequest(removeFriendshipRequest);
+    await friendService.sendRemoveFriendshipRequest(removeFriendshipRequest);
 });
 
 module.exports = router;

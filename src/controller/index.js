@@ -1,11 +1,11 @@
 const friends = require('./friends');
 const liveEvents = require('./live-events');
-const poi = require('./poi');
+const pointsOfInterest = require('./points-of-interest');
 
 const index = {
     friends,
     liveEvents,
-    poi
+    pointsOfInterest
 };
 
 module.exports = index;

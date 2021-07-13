@@ -9,7 +9,7 @@ class LiveEventService {
      * @param {AddLiveEvent} liveEvent the new live event.
      */
     static async addLiveEvent(liveEvent)  {
-        if(!(typeof(liveEvent) === AddLiveEvent)) {
+        if(!(liveEvent instanceof AddLiveEvent)) {
             console.error(`Argument ${liveEvent} is not of type AddLiveEvent`);
             throw TypeError(`Argument ${liveEvent} is not of type AddLiveEvent`);
         }

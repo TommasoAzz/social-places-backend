@@ -11,7 +11,7 @@ class PointOfInterestService {
      * @returns An `Array<Marker>` of points of interest.
      */
     static async getPOIsFromFriend(friend) {
-        if(!(typeof(friend) === Friend)) {
+        if(!(friend instanceof Friend)) {
             console.error(`Argument ${friend} is not of type Friend`);
             throw TypeError(`Argument ${friend} is not of type Friend`);
         }
