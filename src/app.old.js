@@ -1,16 +1,15 @@
-var firebaseAdmin = require('firebase-admin');
+var admin = require('firebase-admin');
 const fs = require('fs');
 var serviceAccount = require('../findmycar-271019-firebase-adminsdk-q91xw-6ce22b9fde.json');
 var https = require('https');
-const dotenv = require('dotenv').config();
-const express = require('express');
-const app = express();
-
-firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(serviceAccount),
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://findmycar-271019.firebaseio.com'
 });
-const db = firebaseAdmin.firestore();
+const db = admin.firestore();
+const express = require('express'),
+    // http = require('http'),
+    app = express();
 var carInterval = {};
 var carIntervalExpired = {};
 var liveFriendInterval = {};
@@ -42,9 +41,7 @@ app.get('/addFriend', (req, res) => {
                         }
                     });
                 }
-                catch (e) { 
-                    console.error(`error ${e}`);
-                }
+                catch (e) { console.log(e); }
                 if (notfriend) {
                     db.collection('user').doc(user).collection('friendrequest').add({
                         origin: sender
@@ -260,8 +257,8 @@ app.get('/startLive', async (req, res) => {
 
 
 const options = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem')
 };
 
 https.createServer(options, app).listen(3000, () => {
