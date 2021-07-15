@@ -1,0 +1,13 @@
+{
+  "include": [
+    "src/persistence/*"
+  ],
+  "compilerOptions": {
+    "target": "ES5",
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "checkJs": true,
+    "outDir": "dist"
+  }
+}
