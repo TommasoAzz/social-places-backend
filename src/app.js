@@ -3,16 +3,15 @@ const fs = require('fs');
 const https = require('https');
 const express = require('express');
 const app = express();
-const dotenv = require('dotenv');
 
-// Environment loading
-dotenv.config();
+// Loading environment
+const environment = require('./config/enviroment');
 
 // Firestore initialization
-const serviceAccount = require('../' + process.env.FIREBASE_SDK);
+const serviceAccount = require(environment.firebaseSDK);
 firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_URL
+    databaseURL: environment.firebaseURL
 });
 const db = firebaseAdmin.firestore();
 
@@ -22,8 +21,8 @@ UserPersistence.connection = db;
 
 // HTTPS initialization
 const options = {
-    key: fs.readFileSync(process.env.CERTIFICATE_KEY),
-    cert: fs.readFileSync(process.env.CERTIFICATE_CERT)
+    key: fs.readFileSync(environment.certificateKey),
+    cert: fs.readFileSync(environment.certificateCert)
 };
 
 // Routes configuration
@@ -39,7 +38,7 @@ app.use('/live-events', liveEvents);
 app.use('/points-of-interest', pointsOfInterest);
 
 // Server setup
-const port = process.env.SERVER_PORT;
+const port = environment.serverPort;
 https.createServer(options, app).listen(port, () => {
     console.log('Server started on port ' + port);
 });
