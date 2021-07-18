@@ -8,7 +8,7 @@ router.post('/add', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - POST /live-events/add');
     const body = req.body;
 
-    let addLiveEvent = new AddLiveEvent(body.expireAfter, body.owner, body.name, body.address);
+    let addLiveEvent = new AddLiveEvent(body.expiresAfter, body.owner, body.name, body.address);
 
     await liveEvent.addLiveEvent(addLiveEvent);
 

@@ -1,3 +1,5 @@
+const AddLiveEvent = require('./request-body/add-live-event');
+
 class LiveEvent {
     /**
      * Constructs a live event information object.
@@ -35,6 +37,37 @@ class LiveEvent {
         this.name = name;
         this.owner = owner;
         this.expirationDate = expirationDate;
+    }
+
+    /**
+     * Constructs a live event information object from an instance of `AddLiveEvent`.
+     * Field expirationDate
+     * 
+     * @param {AddLiveEvent} addLiveEvent
+     * @returns an instance of this class.
+     */
+    static fromLiveEvent(addLiveEvent) {
+        return new LiveEvent(
+            '',
+            addLiveEvent.address,
+            addLiveEvent.name,
+            addLiveEvent.owner,
+            addLiveEvent.expiresAfter + Date.now()
+        );
+    }
+
+    /**
+     * Return a plain JavaScript object representation of the object, without field `id`.
+     * 
+     * @returns a plain JavaScript object representation of the object, without field `id`.
+     */
+    toJsObject() {
+        return {
+            address: this.address,
+            name: this.name,
+            owner: this.owner,
+            expirationDate: this.expirationDate
+        };
     }
 }
 

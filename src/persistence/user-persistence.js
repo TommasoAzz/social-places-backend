@@ -153,7 +153,7 @@ class UserPersistence {
      * @param {LiveEvent} liveEvent Live event data.
      */
     static async addLiveEvent(liveEvent) {
-        const liveEventReference = await this._connection.collection(this._usersDoc).doc(liveEvent.owner).collection(this._liveEventsDoc).add(liveEvent);
+        const liveEventReference = await this._connection.collection(this._usersDoc).doc(liveEvent.owner).collection(this._liveEventsDoc).add(liveEvent.toJsObject());
         console.info(`Added live event for user ${liveEvent.owner}, identifier: ${liveEventReference.id}.`);
     }
 
