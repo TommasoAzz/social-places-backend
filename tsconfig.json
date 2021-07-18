@@ -1,13 +1,20 @@
 {
-  "include": [
-    "src/persistence/*"
+  "exclude": [
+    "./src/app.js",
+    "./src/app.old.js"
   ],
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES6",
     "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "checkJs": true,
+    "pretty": true,
+    "incremental": true,
+    "listFiles": true,
+    "rootDir": "./src",
+    "strictFunctionTypes": true,
+    "moduleResolution": "Node",
     "outDir": "dist"
   }
 }
