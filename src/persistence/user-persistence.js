@@ -162,6 +162,24 @@ class UserPersistence {
     }
 
     /**
+     * Returns the list of friends of `user`.
+     * 
+     * @param {string} user User of which the list of friends must be returned.
+     * @returns A list of `Friend` instances.
+     */
+    static async getFriends(user) {
+        const friends = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).get();
+        
+        return friends.docs.map(friendFromFirestore);
+    }
+
+    static async getLiveEvents(user) {
+        const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._liveEventsDoc}`).get();
+
+        return liveEvents.docs.map(liveEventFromFirestore);
+    }
+
+    /**
      * Returns the points of interest of the user given as argument.
      * 
      * @param {string} username Username.

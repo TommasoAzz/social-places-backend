@@ -6,10 +6,17 @@ let router = express.Router();
 
 const friendService = require('../service/friend');
 
+router.get('/', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - GET /friends');
+    const query = req.query;
+    let username = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
+    
+    res.json(await friendService.getFriends(username)).status(200).send();
+});
+
 router.post('/add', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - POST /friends/add');
     const body = req.body;
-    console.log(body);
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
     
     await friendService.sendAddFriendshipRequest(addFriendshipRequest);

@@ -7,6 +7,22 @@ const UserPersistence = require('../persistence/user-persistence');
 
 class FriendService {
     /**
+     * Gets the list of friends of `user`.
+     * 
+     * @param {string} user The user of which the list must be retrieved.
+     * @returns a list of `Friend`. 
+     */
+    static async getFriends(user) {
+        if(!(typeof(user) === 'string')) {
+            console.error(`Argument ${user} is not a string`);
+            throw TypeError(`Argument ${user} is not a string`);
+        }
+        
+        
+        return await UserPersistence.getFriends(user);
+    }
+
+    /**
      * Sends a request for a friendship as indicated in `friendshipRequest`.
      * 
      * @param {AddFriendshipRequest} friendshipRequest the request itself.
