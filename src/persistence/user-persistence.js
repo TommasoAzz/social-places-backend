@@ -5,6 +5,7 @@ const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
 const Marker = require('../model/marker');
 const FriendRequest = require('../model/friend-request');
+const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 class UserPersistence {
     /**
@@ -87,18 +88,18 @@ class UserPersistence {
      * @returns instance of `User` with the collected data.
      */
     static async getUser(userId) {
-        const friends = await this._connection.collection(this._usersDoc).doc(userId).collection(this._friendsDoc).get();
-        const liveEvents = await this._connection.collection(this._usersDoc).doc(userId).collection(this._liveEventsDoc).get();
-        const markers = await this._connection.collection(this._usersDoc).doc(userId).collection(this._poisDoc).get();
-        const expiredliveEvents = await this._connection.collection(this._usersDoc).doc(userId).collection(this._expiredLiveEventsDoc).get();
-        const friendRequests = await this._connection.collection(this._usersDoc).doc(userId).collection(this._friendRequestsDoc).get();
+        const friends = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendsDoc}`).get();
+        const liveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._liveEventsDoc}`).get();
+        const pointsOfInterest = await this._connection.collection(`${this._usersDoc}/${userId}/${this._poisDoc}`).get();
+        const expiredLiveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._expiredLiveEventsDoc}`).get();
+        const friendRequests = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendRequestsDoc}`).get();
 
         return new User(
             userId,
             friends.empty ? [] : friends.docs.map(friendFromFirestore),
             liveEvents.empty ? [] : liveEvents.docs.map(liveEventFromFirestore),
-            markers.empty ? [] : markers.docs.map(markerFromFirestore),
-            expiredliveEvents.empty ? [] : expiredliveEvents.docs.map(liveEventFromFirestore), 
+            pointsOfInterest.empty ? [] : pointsOfInterest.docs.map(markerFromFirestore),
+            expiredLiveEvents.empty ? [] : expiredLiveEvents.docs.map(liveEventFromFirestore), 
             friendRequests.empty ? [] : friendRequests.docs.map(friendRequestFromFirestore)
         );
     }
@@ -110,9 +111,10 @@ class UserPersistence {
      * @param {string} receiver Receiver of the friendship request.
      */
     static async addFriendRequest(sender, receiver) {
-        const friendRequestReference = await this._connection.collection(this._usersDoc).doc(receiver).collection(this._friendRequestsDoc).add({
+        const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).add({
             origin: sender
         });
+
         console.info(`Sent friend request from ${sender} to ${receiver}, identifier: ${friendRequestReference.id}.`);
     }
 
@@ -123,9 +125,10 @@ class UserPersistence {
      * @param {string} friendToAdd new friend to add.
      */
     static async addFriend(user, friendToAdd) {
-        const friendRequestReference = await this._connection.collection(this._usersDoc).doc(user).collection(this._friendsDoc).add({
+        const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).add({
             friend: friendToAdd
         });
+
         console.info(`Confirmed friend request from ${friendToAdd} to ${user} (now they are friend), identifier: ${friendRequestReference.id}.`);
     }
 
@@ -136,13 +139,13 @@ class UserPersistence {
      * @param {string} friendToRemove friend to remove.
      */
     static async removeFriend(user, friendToRemove) {
-        const friendsOfUser = await this._connection.collection(this._usersDoc).doc(user).collection(this._friendsDoc).where('friend', '==', friendToRemove).get();
+        const friendsOfUser = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).where('friend', '==', friendToRemove).get();
         if(friendsOfUser.empty) {
             console.error(`${friendToRemove} is not friend of ${user} therefore no removal happened.`);
         }
 
         const friendIdentifier = friendsOfUser.docs[0].id;
-        await this._connection.collection(this._usersDoc).doc(user).collection(this._friendsDoc).doc(friendIdentifier).delete();
+        await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).doc(friendIdentifier).delete();
 
         console.info(`Confirmed friend removal from ${user} of ${friendToRemove} (now they are not friend anymore).`);
     }
@@ -153,7 +156,8 @@ class UserPersistence {
      * @param {LiveEvent} liveEvent Live event data.
      */
     static async addLiveEvent(liveEvent) {
-        const liveEventReference = await this._connection.collection(this._usersDoc).doc(liveEvent.owner).collection(this._liveEventsDoc).add(liveEvent.toJsObject());
+        const liveEventReference = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._liveEventsDoc}`).add(liveEvent.toJsObject());
+        
         console.info(`Added live event for user ${liveEvent.owner}, identifier: ${liveEventReference.id}.`);
     }
 
@@ -164,8 +168,21 @@ class UserPersistence {
      * @returns An `Array<Marker>` of markers.
      */
     static async getPOIsOfUser(username) {
-        const pois = await this._connection.collection(this._usersDoc).doc(username).collection(this._poisDoc).get();
+        const pois = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).get();
+        
         return pois.docs.map(markerFromFirestore);
+    }
+
+    /**
+     * Adds a new point of interest in the list of points of interest of the user.
+     * 
+     * @param {string} user User which owns this point of interest.
+     * @param {AddPointOfInterest} poi Live event data.
+     */
+    static async addPointOfInterest(user, poi) {
+        const liveEventReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).add(poi.toJsObject());
+            
+        console.info(`Added point of interest ${poi} for user ${user}, identifier: ${liveEventReference.id}.`);
     }
 }
 

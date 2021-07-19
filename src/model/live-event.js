@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const AddLiveEvent = require('./request-body/add-live-event');
 
 class LiveEvent {
