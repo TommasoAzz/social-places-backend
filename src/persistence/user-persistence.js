@@ -35,11 +35,25 @@ class UserPersistence {
     static _friendRequestsDoc = 'friendrequest';
 
     /**
-     * The Firestore document corrisponding to the live events list of a user.
+     * The Firestore document corrisponding to the friendship confirmations received.
+     * @type {string}
+     * @readonly
+     */
+    static _notifyFriendshipConfirmationDoc = 'addedfriend';
+
+    /**
+     * The Firestore document corrisponding to the live events created by the friends of a user.
      * @type {string}
      * @readonly
      */
     static _liveEventsDoc = 'live';
+
+    /**
+     * The Firestore document corrisponding to the live events created by the user.
+     * @type {string}
+     * @readonly
+     */
+    static _personalLiveEventsDoc = 'living';
     
     /**
      * The Firestore document corrisponding to the point of interests list of a user.
@@ -133,6 +147,20 @@ class UserPersistence {
     }
 
     /**
+     * Triggers a friendship confirmation notification for user `senderOfTheFriendshipRequest`.
+     * 
+     * @param {string} senderOfTheFriendshipRequest User that will receive a notification.
+     * @param {string} receiverOfTheFriendshipRequest User that confirmed the friendship request.
+     */
+    static async notifyAddedFriend(senderOfTheFriendshipRequest, receiverOfTheFriendshipRequest) {
+        const friendshipConfirmationReference = await this._connection.collection(`${this._usersDoc}/${senderOfTheFriendshipRequest}/${this._notifyFriendshipConfirmationDoc}`).add({
+            friend: receiverOfTheFriendshipRequest
+        });
+
+        console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}.`);
+    }
+
+    /**
      * Removes `friendToRemove` from the list of friends of `user`.
      * 
      * @param {string} user username of the user in which `friendToRemove` will be removed from.
@@ -156,9 +184,13 @@ class UserPersistence {
      * @param {LiveEvent} liveEvent Live event data.
      */
     static async addLiveEvent(liveEvent) {
-        const liveEventReference = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._liveEventsDoc}`).add(liveEvent.toJsObject());
+        const personalLiveEventReference = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).add(liveEvent.toJsObject());
+        const friends = await this.getFriends(liveEvent.owner);
+        friends.forEach(async (friend) => {
+            await this._connection.collection(`${this._usersDoc}/${friend.friendUsername}/${this._liveEventsDoc}`).add(liveEvent.toJsObject());
+        });
         
-        console.info(`Added live event for user ${liveEvent.owner}, identifier: ${liveEventReference.id}.`);
+        console.info(`Added live event for user ${liveEvent.owner} and in their friends list: ${friends.map(friend => friend.friendUsername)}, identifier: ${personalLiveEventReference.id}.`);
     }
 
     /**
