@@ -1,4 +1,3 @@
-const Friend = require('../model/request-body/friend');
 let express = require('express');
 let router = express.Router();
 const pointOfInterest = require('../service/point-of-interest');
@@ -6,8 +5,8 @@ const AddPointOfInterest = require('../model/request-body/add-point-of-interest'
 
 router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /points-of-interest');
-    const body = req.body;
-    let friend = new Friend(body.friend);
+    const query = req.query;
+    let friend = query.friend + ''; // Workaround per evitare di mettere disable a ESLint.
 
     const markers = await pointOfInterest.getPOIsFromFriend(friend);
     
