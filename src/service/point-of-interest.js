@@ -31,7 +31,7 @@ class PointOfInterestService {
             throw TypeError(`Argument ${poi} is not of type AddPointOfInterest`);  
         }
 
-        await UserPersistence.addPointOfInterest(user, poi);
+        return await UserPersistence.addPointOfInterest(user, poi);
     }
 
     /**

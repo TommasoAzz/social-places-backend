@@ -27,9 +27,9 @@ router.post('/add', async (req, res) => {
         body.poi.url
     );
 
-    const markers = await pointOfInterest.addPointOfInterest(body.user, addPointOfInterest);
+    const poiId = await pointOfInterest.addPointOfInterest(body.user, addPointOfInterest);
     
-    res.json(markers).status(200).send();
+    res.json(poiId).status(200).send();
 });
 
 router.delete('/remove', async (req, res) => {

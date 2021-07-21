@@ -93,6 +93,8 @@ class UserPersistence {
 
             returnedUsers.push(await this.getUser(documents[i].id));
         }
+
+        return returnedUsers;
     }
 
     /**
@@ -123,6 +125,7 @@ class UserPersistence {
      * 
      * @param {string} sender Sender of the friendship request.
      * @param {string} receiver Receiver of the friendship request.
+     * @returns The id of the request.
      */
     static async addFriendRequest(sender, receiver) {
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).add({
@@ -130,6 +133,8 @@ class UserPersistence {
         });
 
         console.info(`Sent friend request from ${sender} to ${receiver}, identifier: ${friendRequestReference.id}.`);
+
+        return friendRequestReference.id;
     }
 
     /**
@@ -139,11 +144,13 @@ class UserPersistence {
      * @param {string} friendToAdd new friend to add.
      */
     static async addFriend(user, friendToAdd) {
-        const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).add({
+        const addedFriend = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).add({
             friend: friendToAdd
         });
 
-        console.info(`Confirmed friend request from ${friendToAdd} to ${user} (now they are friend), identifier: ${friendRequestReference.id}.`);
+        console.info(`Confirmed friend request from ${friendToAdd} to ${user} (now they are friend), identifier: ${addedFriend.id}.`);
+
+        return addedFriend.id;
     }
 
     /**
@@ -191,6 +198,8 @@ class UserPersistence {
         });
         
         console.info(`Added live event for user ${liveEvent.owner} and in their friends list: ${friends.map(friend => friend.friendUsername)}, identifier: ${personalLiveEventReference.id}.`);
+
+        return personalLiveEventReference.id;
     }
 
     /**
@@ -233,6 +242,8 @@ class UserPersistence {
         const liveEventReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).add(poi.toJsObject());
             
         console.info(`Added point of interest ${poi} for user ${user}, identifier: ${liveEventReference.id}.`);
+
+        return liveEventReference.id;
     }
 
     /**
