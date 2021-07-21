@@ -32,4 +32,15 @@ router.post('/add', async (req, res) => {
     res.json(markers).status(200).send();
 });
 
+router.delete('/remove', async (req, res) => {
+    console.info((new Date()).toLocaleString() + ' - DELETE /points-of-interest/remove');
+    const body = req.body;
+    let poiId = body.poiId;
+    let username = body.username;
+
+    await pointOfInterest.removePointOfInterest(poiId, username);
+
+    res.status(200).send();
+});
+
 module.exports = router;

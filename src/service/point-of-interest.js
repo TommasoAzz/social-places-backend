@@ -12,8 +12,8 @@ class PointOfInterestService {
      */
     static async getPOIsFromFriend(friend) {
         if(!(typeof(friend) === 'string')) {
-            console.error(`Argument ${friend} is not of type Friend`);
-            throw TypeError(`Argument ${friend} is not of type Friend`);
+            console.error(`Argument ${friend} is not of type string`);
+            throw TypeError(`Argument ${friend} is not of type string`);
         }
         
         return await UserPersistence.getPOIsOfUser(friend);
@@ -32,6 +32,25 @@ class PointOfInterestService {
         }
 
         await UserPersistence.addPointOfInterest(user, poi);
+    }
+
+    /**
+     * Removes a point of interest (identified by `poiId`) owned by user identified with `username`.
+     * 
+     * @param {string} poiId Identifier of the point of interest to remove. 
+     * @param {string} username Username of the user owning the point of interest.
+     */
+    static async removePointOfInterest(poiId, username) {
+        if(!(typeof(poiId) === 'string')) {
+            console.error(`Argument ${poiId} is not of type string`);
+            throw TypeError(`Argument ${poiId} is not of type string`);
+        }
+        if(!(typeof(username) === 'string')) {
+            console.error(`Argument ${username} is not of type string`);
+            throw TypeError(`Argument ${username} is not of type string`);
+        }
+
+        await UserPersistence.removePointOfInterest(poiId, username);
     }
 }
 

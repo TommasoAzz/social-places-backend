@@ -234,6 +234,23 @@ class UserPersistence {
             
         console.info(`Added point of interest ${poi} for user ${user}, identifier: ${liveEventReference.id}.`);
     }
+
+    /**
+     * Removes the point of interest with identifier `poiId` from the list of point of interest owned by `username`.
+     * 
+     * @param {string} poiId Identifier of the point of interest to remove.
+     * @param {string} username username of the user in which the point of interest should be found.
+     */
+    static async removePointOfInterest(poiId, username) {
+        const poi = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).doc(poiId).get();
+        if(!poi.exists) {
+            console.error(`The point of interest with id=${poiId} does not exist in the list of user ${username}.`);
+        }
+
+        await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).doc(poiId).delete();
+
+        console.info(`Confirmed point of interest with id=${poiId} removal from ${username}.`);
+    }
 }
 
 module.exports = UserPersistence;
