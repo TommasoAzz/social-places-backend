@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const Marker = require('../model/marker');
+const PointOfInterest = require('../model/point-of-interest');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 const UserPersistence = require('../persistence/user-persistence');
@@ -7,16 +7,17 @@ const UserPersistence = require('../persistence/user-persistence');
 class PointOfInterestService {
     /**
      * Retrieves the point of interests of a user.
-     * @param {string} friend friend's data.
-     * @returns An `Array<Marker>` of points of interest.
+     * 
+     * @param {string} user user's data.
+     * @returns An `Array<PointOfInterest>` of points of interest.
      */
-    static async getPOIsFromFriend(friend) {
-        if(!(typeof(friend) === 'string')) {
-            console.error(`Argument ${friend} is not of type string`);
-            throw TypeError(`Argument ${friend} is not of type string`);
+    static async getPOIsOfUser(user) {
+        if(!(typeof(user) === 'string')) {
+            console.error(`Argument ${user} is not of type string`);
+            throw TypeError(`Argument ${user} is not of type string`);
         }
         
-        return await UserPersistence.getPOIsOfUser(friend);
+        return await UserPersistence.getPOIsOfUser(user);
     }
 
     /**

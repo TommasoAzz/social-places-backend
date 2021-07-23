@@ -6,11 +6,11 @@ const AddPointOfInterest = require('../model/request-body/add-point-of-interest'
 router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /points-of-interest');
     const query = req.query;
-    let friend = query.friend + ''; // Workaround per evitare di mettere disable a ESLint.
+    let user = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
 
-    const markers = await pointOfInterest.getPOIsFromFriend(friend);
+    const pois = await pointOfInterest.getPOIsOfUser(user);
     
-    res.json(markers).status(200).send();
+    res.json(pois).status(200).send();
 });
 
 router.post('/add', async (req, res) => {

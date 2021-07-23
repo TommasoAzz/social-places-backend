@@ -3,7 +3,7 @@ const FirebaseFirestore = require('firebase-admin').firestore;
 const Friend = require('../model/friend');
 const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
-const Marker = require('../model/marker');
+const PointOfInterest = require('../model/point-of-interest');
 const FriendRequest = require('../model/friend-request');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
@@ -114,7 +114,7 @@ class UserPersistence {
             userId,
             friends.empty ? [] : friends.docs.map(friendFromFirestore),
             liveEvents.empty ? [] : liveEvents.docs.map(liveEventFromFirestore),
-            pointsOfInterest.empty ? [] : pointsOfInterest.docs.map(markerFromFirestore),
+            pointsOfInterest.empty ? [] : pointsOfInterest.docs.map(pointOfInterestFromFirestore),
             expiredLiveEvents.empty ? [] : expiredLiveEvents.docs.map(liveEventFromFirestore), 
             friendRequests.empty ? [] : friendRequests.docs.map(friendRequestFromFirestore)
         );
@@ -260,12 +260,12 @@ class UserPersistence {
      * Returns the points of interest of the user given as argument.
      * 
      * @param {string} username Username.
-     * @returns An `Array<Marker>` of markers.
+     * @returns An `Array<PointOfInterest>` of point of interests.
      */
     static async getPOIsOfUser(username) {
         const pois = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).get();
         
-        return pois.docs.map(markerFromFirestore);
+        return pois.docs.map(pointOfInterestFromFirestore);
     }
 
     /**
@@ -332,23 +332,23 @@ function liveEventFromFirestore(document, _, __) {
         document.data().address,
         document.data().name,
         document.data().owner,
-        parseInt(document.data().expiresAfter)
+        parseInt(document.data().expirationDate)
     );
 }
 
 
 /**
- * Converts data of a marker to an instance of class `Marker`.
+ * Converts data of a point of interest to an instance of class `PointOfInterest`.
  * 
  * @param {FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>} document the data from Firestore.
- * @returns a `Marker` instance with data retrieved from `document`
+ * @returns a `PointOfInterest` instance with data retrieved from `document`
  */
-function markerFromFirestore(document, _, __) {
+function pointOfInterestFromFirestore(document, _, __) {
     if(!document.exists) {
         return null;
     }
 
-    return new Marker(
+    return new PointOfInterest(
         document.id,
         document.data().addr,
         document.data().cont,
