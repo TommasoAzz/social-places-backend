@@ -17,7 +17,9 @@ class LiveEventService {
         }
         
         
-        return await UserPersistence.getLiveEvents(user);
+        return (await UserPersistence.getPersonalLiveEvents(user)).concat(
+            await UserPersistence.getLiveEventsFromFriends(user)
+        );
     }
     /**
      * Publishes a new live event.

@@ -214,8 +214,26 @@ class UserPersistence {
         return friends.docs.map(friendFromFirestore);
     }
 
-    static async getLiveEvents(user) {
+    /**
+     * Returns all live events published by the user's friends.
+     * 
+     * @param {string} user User of which the list of friends' live events must be returned.
+     * @returns A list of `LiveEvent`.
+     */
+    static async getLiveEventsFromFriends(user) {
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._liveEventsDoc}`).get();
+
+        return liveEvents.docs.map(liveEventFromFirestore);
+    }
+
+    /**
+     * Returns all live events published by the user.
+     * 
+     * @param {string} user User of which the owned live events must be returned.
+     * @returns A list of `LiveEvent`.
+     */
+    static async getPersonalLiveEvents(user) {
+        const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalLiveEventsDoc}`).get();
 
         return liveEvents.docs.map(liveEventFromFirestore);
     }
@@ -293,10 +311,10 @@ function liveEventFromFirestore(document, _, __) {
 
     return new LiveEvent(
         document.id,
-        document.data().addr,
+        document.data().address,
         document.data().name,
         document.data().owner,
-        parseInt(document.data().timer)
+        parseInt(document.data().expiresAfter)
     );
 }
 
