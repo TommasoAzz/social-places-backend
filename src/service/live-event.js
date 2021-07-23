@@ -25,6 +25,7 @@ class LiveEventService {
      * Publishes a new live event.
      * 
      * @param {AddLiveEvent} liveEvent the new live event.
+     * @returns `true` if the live event was added, `false` otherwise.
      */
     static async addLiveEvent(liveEvent)  {
         if(!(liveEvent instanceof AddLiveEvent)) {
@@ -34,7 +35,9 @@ class LiveEventService {
 
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);
         
-        await UserPersistence.addLiveEvent(liveEventToAdd);
+        const opResult = await UserPersistence.addLiveEvent(liveEventToAdd);
+
+        return opResult != null;
     }
 }
 

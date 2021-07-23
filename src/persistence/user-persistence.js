@@ -186,13 +186,31 @@ class UserPersistence {
     }
 
     /**
-     * Adds a new live event in the list of live events of the live event's owner.
+     * Adds a new live event in the list of live events of the live event's owner and in their friends'.
      * 
      * @param {LiveEvent} liveEvent Live event data.
+     * @returns the live event id if added, `null` if the user or their friends have already a live event in their list with the same name or address.
      */
     static async addLiveEvent(liveEvent) {
-        const personalLiveEventReference = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).add(liveEvent.toJsObject());
+        // Checking for live events with same name or address.
+        const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
+        const personalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('address', '==', liveEvent.address).get();
+        if(!personalDuplicatedName.empty && !personalDuplicatedAddr.empty) {
+            return null;
+        }
+
         const friends = await this.getFriends(liveEvent.owner);
+        let found = false;
+        for(let i = 0, len = friends.length; i < len && !found; i++) {
+            const friendDuplicatedName = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('name', '==', liveEvent.name).get();
+            const friendDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('address', '==', liveEvent.address).get();
+            found = !friendDuplicatedName.empty || !friendDuplicatedAddr.empty;
+        }
+        if(found) {
+            return null;
+        }
+
+        const personalLiveEventReference = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).add(liveEvent.toJsObject());
         friends.forEach(async (friend) => {
             await this._connection.collection(`${this._usersDoc}/${friend.friendUsername}/${this._liveEventsDoc}`).add(liveEvent.toJsObject());
         });
