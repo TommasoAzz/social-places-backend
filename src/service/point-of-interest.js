@@ -1,4 +1,5 @@
 // eslint-disable-next-line no-unused-vars
+const Friend = require('../model/friend');
 const PointOfInterest = require('../model/point-of-interest');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
@@ -18,6 +19,32 @@ class PointOfInterestService {
         }
         
         return await UserPersistence.getPOIsOfUser(user);
+    }
+
+    /**
+     * Retrieves the point of interests of a user which is their friend.
+     * Previously check if `user` and `friend` are friends.
+     * 
+     * @param {string} user user's username.
+     * @param {string} friend user's friend username
+     * @returns An `Array<PointOfInterest>` of points of interest.
+     */
+    static async getPOIsOfFriend(user, friend) {
+        if(!(typeof(user) === 'string')) {
+            console.error(`Argument ${user} is not of type string`);
+            throw TypeError(`Argument ${user} is not of type string`);
+        }
+        if(!(typeof(friend) === 'string')) {
+            console.error(`Argument ${friend} is not of type string`);
+            throw TypeError(`Argument ${friend} is not of type string`);
+        }
+
+        const friendsOfFriend = await UserPersistence.getFriends(friend);
+        if(!friendsOfFriend.map((f) => f.friendUsername).includes(user)) {
+            return null;
+        }
+        
+        return (await UserPersistence.getPOIsOfUser(friend)).filter((poi) => poi.visibility.toLowerCase() == 'pubblico');
     }
 
     /**
