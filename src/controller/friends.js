@@ -10,7 +10,12 @@ router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /friends');
     const query = req.query;
     let username = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
-    
+    let auth = req.headers.Authorization + ''; // Workaround per evitare di mettere disable a ESLint.
+    console.info((new Date()).toLocaleString() + ' - GET /friends ' + auth);
+    //user doesnt exist
+    //401 senza token
+    //403 token scaduto
+
     res.json(await friendService.getFriends(username)).status(200).send();
 });
 
@@ -18,9 +23,9 @@ router.post('/add', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - POST /friends/add');
     const body = req.body;
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
-    
+
     await friendService.sendAddFriendshipRequest(addFriendshipRequest);
-    
+
     res.status(200).send();
 });
 
@@ -28,7 +33,7 @@ router.post('/confirm', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - POST /friends/confirm');
     const body = req.body;
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
-    
+
     await friendService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
 
     res.status(200).send();
