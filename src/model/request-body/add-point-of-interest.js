@@ -1,7 +1,7 @@
 class AddPointOfInterest {
     /**
      * Constructs a point of interest creation request body.
-     * 
+     *
      * @param {string} address Address reverse geocoded from latitude and longitude of the place.
      * @param {string} type Description of the place (what is it).
      * @param {number} latitude Latitude of the place.
@@ -65,18 +65,18 @@ class AddPointOfInterest {
      * - phoneNumber -> phone
      * - visibility -> type
      * - url -> url
-     * 
+     *
      * @returns a plain JavaScript object representation of the object, without field `id`.
      */
     toJsObject() {
         return {
-            addr: this.address,
-            cont: this.type,
-            lat: this.latitude,
-            lon: this.longitude,
+            address: this.address,
+            type: this.type,
+            latitude: this.latitude,
+            longitude: this.longitude,
             name: this.name,
-            phone: this.phoneNumber,
-            type: this.visibility,
+            phoneNumber: this.phoneNumber,
+            visibility: this.visibility,
             url: this.url
         };
     }

@@ -10,8 +10,8 @@ router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /friends');
     const query = req.query;
     let username = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
-    let auth = req.headers.Authorization + ''; // Workaround per evitare di mettere disable a ESLint.
-    console.info((new Date()).toLocaleString() + ' - GET /friends ' + auth);
+    //let auth = req.headers.Authorization + ''; // Workaround per evitare di mettere disable a ESLint.
+    //console.info((new Date()).toLocaleString() + ' - GET /friends ' + auth);
     //user doesnt exist
     //401 senza token
     //403 token scaduto

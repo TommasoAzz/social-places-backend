@@ -7,7 +7,12 @@ router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /points-of-interest');
     const query = req.query;
     let user = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
-    
+    let auth = req.headers.Authorization + ''; // Workaround per evitare di mettere disable a ESLint.
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        //console.info((new Date()).toLocaleString() + ' - GET /point-of-interests ' + req.headers.authorization.split(' ')[1]);
+    }
+    //console.info((new Date()).toLocaleString() + ' - GET /point-of-interest ' + req.headers);
+        
     let pois;
     if(query.friend === undefined || query.friend === '') {
         pois = await pointOfInterest.getPOIsOfUser(user);
