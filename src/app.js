@@ -13,11 +13,16 @@ firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount),
     databaseURL: environment.firebaseURL
 });
-const db = firebaseAdmin.firestore();
+const firestore = firebaseAdmin.firestore();
+const auth = firebaseAdmin.auth();
 
 // Persistence manager initialization
 const UserPersistence = require('./persistence/user-persistence');
-UserPersistence.connection = db;
+UserPersistence.connection = firestore;
+
+// Authentication manager 
+const UserAuthentication = require('./persistence/user-authentication');
+UserAuthentication.connection = auth;
 
 // HTTPS initialization
 const options = {

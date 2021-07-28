@@ -1,18 +1,21 @@
 let express = require('express');
 let router = express.Router();
 const pointOfInterest = require('../service/point-of-interest');
+const auth = require('../service/auth');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 router.get('/', async (req, res) => {
     console.info((new Date()).toLocaleString() + ' - GET /points-of-interest');
     const query = req.query;
-    let user = query.user + ''; // Workaround per evitare di mettere disable a ESLint.
-    let auth = req.headers.Authorization + ''; // Workaround per evitare di mettere disable a ESLint.
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        //console.info((new Date()).toLocaleString() + ' - GET /point-of-interests ' + req.headers.authorization.split(' ')[1]);
+    const token = auth.parseHeaders(req.headers);
+    if(token == -1 || token == 0) {
+        res.status(401).send();
     }
-    //console.info((new Date()).toLocaleString() + ' - GET /point-of-interest ' + req.headers);
-        
+    let user = await auth.verifyToken(token);
+    if(user === null || user != query.user) {
+        res.status(403).send();
+    }    
+
     let pois;
     if(query.friend === undefined || query.friend === '') {
         pois = await pointOfInterest.getPOIsOfUser(user);
