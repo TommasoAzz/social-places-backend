@@ -5,16 +5,17 @@ const auth = require('../service/auth');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 router.get('/', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - GET /points-of-interest');
     const query = req.query;
     const token = auth.parseHeaders(req.headers);
-    if(token == -1 || token == 0) {
+    if(token === null) {
         res.status(401).send();
+        return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != query.user) {
         res.status(403).send();
-    }    
+        return;
+    }
 
     let pois;
     if(query.friend === undefined || query.friend === '') {
@@ -24,9 +25,9 @@ router.get('/', async (req, res) => {
         pois = await pointOfInterest.getPOIsOfFriend(user, friend);
     }
 
-    if(pois === null) {
+    if(pois === null) { // friend and user are not friends.
         res.status(400).send();
-    } else {
+    } else { // friend and users are friends, pois can be empty.
         res.status(200).json(pois).send();
     }
 });

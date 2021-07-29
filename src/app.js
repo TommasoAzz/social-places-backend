@@ -36,6 +36,12 @@ const { friends, liveEvents, pointsOfInterest } = require('./controller');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Interceptor: all requests pass through here and then get forwarded to their true handler.
+app.use((req, _, next) => {
+    console.info(`${(new Date()).toLocaleString()} - ${req.method} ${req.path}`);
+    next();
+});
+
 app.use('/friends', friends);
 
 app.use('/live-events', liveEvents);

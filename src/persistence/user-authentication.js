@@ -25,7 +25,12 @@ class UserAuthentication {
     static async verifyToken(token) {
         try {
             const decodedToken = await this._connection.verifyIdToken(token);
-            return decodedToken.email.replace('@gmail.com', '');
+            const atSymbolIndex = decodedToken.email.indexOf('@');
+            let username = decodedToken.email; // Design choice was to use the e-mail as a username.
+            if(atSymbolIndex !== -1) {
+                username = username.substring(0, atSymbolIndex);
+            }
+            return username;
         } catch(wrongToken) {
             return null;
         }
