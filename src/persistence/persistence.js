@@ -376,13 +376,13 @@ function pointOfInterestFromFirestore(document, _, __) {
 
     return new PointOfInterest(
         document.id,
-        document.data().addr,
-        document.data().cont,
-        parseFloat(document.data().lat),
-        parseFloat(document.data().lon),
-        document.data().name,
-        document.data().phone,
+        document.data().address,
         document.data().type,
+        parseFloat(document.data().latitude),
+        parseFloat(document.data().longitude),
+        document.data().name,
+        document.data().phoneNumber,
+        document.data().visibility,
         document.data().url
     );
 }

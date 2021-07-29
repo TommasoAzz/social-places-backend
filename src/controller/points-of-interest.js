@@ -28,6 +28,7 @@ router.get('/', async (req, res) => {
     }
 
     if(pois === null) { // friend and user are not friends.
+        console.error(`> Status code 400 - ${user} and ${query.friend} are not friends.`);
         res.status(400).send();
     } else { // friend and users are friends, pois can be empty.
         res.status(200).json(pois).send();
