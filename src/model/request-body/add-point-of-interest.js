@@ -80,6 +80,10 @@ class AddPointOfInterest {
             url: this.url
         };
     }
+
+    toString() {
+        return `AddPointOfInterest(address: ${this.address}, type: ${this.type}, latitude: ${this.latitude}, longitude: ${this.longitude}, name: ${this.name}, phoneNumber: ${this.phoneNumber}, visibility: ${this.visibility}, url: ${this.url})`;
+    }
 }
 
 module.exports = AddPointOfInterest;

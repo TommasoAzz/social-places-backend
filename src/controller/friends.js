@@ -6,19 +6,20 @@ let router = express.Router();
 
 const friendService = require('../service/friend');
 const auth = require('../service/auth');
+const APIError = require('../model/error');
 
 router.get('/', async (req, res) => {
     const query = req.query;
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
-        res.status(401).send();
+        res.status(401).json(APIError.build('Token not available.')).send();
         return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != query.user) {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${query.user}.`);
-        res.status(403).send();
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
         return;
     }
 
@@ -30,13 +31,13 @@ router.post('/add', async (req, res) => {
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
-        res.status(401).send();
+        res.status(401).json(APIError.build('Token not available.')).send();
         return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != body.sender) {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.sender}.`);
-        res.status(403).send();
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.sender}.`)).send();
         return;
     }
 
@@ -51,13 +52,14 @@ router.post('/confirm', async (req, res) => {
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
+        res.status(401).json(APIError.build('Token not available.')).send();
         res.status(401).send();
         return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != body.receiverOfTheFriendshipRequest) {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.receiverOfTheFriendshipRequest}.`);
-        res.status(403).send();
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.receiverOfTheFriendshipRequest}.`)).send();
         return;
     }
 
@@ -72,13 +74,13 @@ router.delete('/remove', async (req, res) => {
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
-        res.status(401).send();
+        res.status(401).json(APIError.build('Token not available.')).send();
         return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != body.sender) {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.sender}.`);
-        res.status(403).send();
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.sender}.`)).send();
         return;
     }
 
