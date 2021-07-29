@@ -30,8 +30,12 @@ class UserAuthentication {
             if(atSymbolIndex !== -1) {
                 username = username.substring(0, atSymbolIndex);
             }
+            
             return username;
         } catch(wrongToken) {
+            console.error('> Error while verifying the user\'s token:');
+            console.error(wrongToken);
+
             return null;
         }
     }

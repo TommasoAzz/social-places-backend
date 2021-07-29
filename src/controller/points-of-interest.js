@@ -8,11 +8,13 @@ router.get('/', async (req, res) => {
     const query = req.query;
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
+        console.error('> Status code 401 - Token not available.');
         res.status(401).send();
         return;
     }
     let user = await auth.verifyToken(token);
     if(user === null || user != query.user) {
+        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${query.user}.`);
         res.status(403).send();
         return;
     }
@@ -33,8 +35,20 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/add', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - POST /points-of-interest/add');
     const body = req.body;
+    const token = auth.parseHeaders(req.headers);
+    if(token === null) {
+        console.error('> Status code 401 - Token not available.');
+        res.status(401).send();
+        return;
+    }
+    let user = await auth.verifyToken(token);
+    if(user === null || user != body.user) {
+        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
+        res.status(403).send();
+        return;
+    }
+
     let addPointOfInterest = new AddPointOfInterest(
         body.poi.address,
         body.poi.type,
@@ -45,19 +59,28 @@ router.post('/add', async (req, res) => {
         body.poi.visibility,
         body.poi.url
     );
-
     const poiId = await pointOfInterest.addPointOfInterest(body.user, addPointOfInterest);
     
     res.json(poiId).status(200).send();
 });
 
 router.delete('/remove', async (req, res) => {
-    console.info((new Date()).toLocaleString() + ' - DELETE /points-of-interest/remove');
     const body = req.body;
-    let poiId = body.poiId;
-    let username = body.username;
+    const token = auth.parseHeaders(req.headers);
+    if(token === null) {
+        console.error('> Status code 401 - Token not available.');
+        res.status(401).send();
+        return;
+    }
+    let user = await auth.verifyToken(token);
+    if(user === null || user != body.user) {
+        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
+        res.status(403).send();
+        return;
+    }
 
-    await pointOfInterest.removePointOfInterest(poiId, username);
+    let poiId = body.poiId;
+    await pointOfInterest.removePointOfInterest(poiId, user);
 
     res.status(200).send();
 });

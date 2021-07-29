@@ -14,12 +14,13 @@ class AuthService {
 
     /**
      * Returns the token from the "Authorization" header.
+     * Authentication uses the Bearer token technique.
      * 
      * @param {Request<{}, any, any, qs.ParsedQs, Record<string, any>>} headers Header retrieved from the request.
      * @returns The token if the "Authorization" header was  set, `null` otherwise.
      */
     static parseHeaders(headers) {
-        const authHeader = headers.authorization;
+        const authHeader = headers.authorization; // The lower case is correct.
 
         if(authHeader && authHeader.startsWith('Bearer ')) {
             return authHeader.split(' ')[1];
