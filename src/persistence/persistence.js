@@ -78,6 +78,19 @@ class Persistence {
     }
 
     /**
+     * Creates a user document if it does not exist in the persistence manager.
+     * 
+     * @param {string} user 
+     */
+    static async createUserIfNotExistent(user) {
+        const userDoc = await this._connection.collection(`${this._usersDoc}`).doc(user).get();
+        if(!userDoc.exists) {
+            console.info(`Creating a new document for user ${user} since it does not exist.`);
+            await this._connection.collection(`${this._usersDoc}`).doc(user).set({});
+        }
+    }
+
+    /**
      * Retrieves all user records available on Firestore.
      *
      * @returns all user records (`Array<User>`) available on Firestore.
@@ -104,6 +117,8 @@ class Persistence {
      * @returns instance of `User` with the collected data.
      */
     static async getUser(userId) {
+        await this.createUserIfNotExistent(userId);
+
         const friends = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendsDoc}`).get();
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._liveEventsDoc}`).get();
         const pointsOfInterest = await this._connection.collection(`${this._usersDoc}/${userId}/${this._poisDoc}`).get();
@@ -128,6 +143,8 @@ class Persistence {
      * @returns The id of the request.
      */
     static async addFriendRequest(sender, receiver) {
+        await this.createUserIfNotExistent(receiver);
+
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).add({
             origin: sender
         });
@@ -145,6 +162,8 @@ class Persistence {
      * @param {string} receiver Receiver of the friendship request.
      */
     static async removeFriendRequest(sender, receiver) {
+        await this.createUserIfNotExistent(receiver);
+
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).where('origin', '==', sender).get();
         if(friendRequestReference.empty) {
             console.error(`User ${sender} did not send a friendship request to ${receiver}.`);
@@ -164,6 +183,8 @@ class Persistence {
      * @param {string} friendToAdd new friend to add.
      */
     static async addFriend(user, friendToAdd) {
+        await this.createUserIfNotExistent(user);
+
         const addedFriend = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).add({
             friend: friendToAdd
         });
@@ -180,6 +201,8 @@ class Persistence {
      * @param {string} receiverOfTheFriendshipRequest User that confirmed the friendship request.
      */
     static async notifyAddedFriend(senderOfTheFriendshipRequest, receiverOfTheFriendshipRequest) {
+        await this.createUserIfNotExistent(senderOfTheFriendshipRequest);
+
         const friendshipConfirmationReference = await this._connection.collection(`${this._usersDoc}/${senderOfTheFriendshipRequest}/${this._notifyFriendshipConfirmationDoc}`).add({
             friend: receiverOfTheFriendshipRequest
         });
@@ -194,6 +217,8 @@ class Persistence {
      * @param {string} friendToRemove friend to remove.
      */
     static async removeFriend(user, friendToRemove) {
+        await this.createUserIfNotExistent(user);
+
         const friendsOfUser = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).where('friend', '==', friendToRemove).get();
         if(friendsOfUser.empty) {
             console.error(`${friendToRemove} is not friend of ${user} therefore no removal happened.`);
@@ -218,6 +243,8 @@ class Persistence {
      * @returns the live event id if added, `null` if the user or their friends have already a live event in their list with the same name or address.
      */
     static async addLiveEvent(liveEvent) {
+        await this.createUserIfNotExistent(liveEvent.owner);
+
         // Checking for live events with same name or address.
         const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
         const personalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('address', '==', liveEvent.address).get();
@@ -253,6 +280,8 @@ class Persistence {
      * @returns A list of `Friend` instances.
      */
     static async getFriends(user) {
+        await this.createUserIfNotExistent(user);
+
         const friends = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).get();
         
         return friends.docs.map(friendFromFirestore);
@@ -265,6 +294,8 @@ class Persistence {
      * @returns A list of `LiveEvent`.
      */
     static async getLiveEventsFromFriends(user) {
+        await this.createUserIfNotExistent(user);
+
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._liveEventsDoc}`).get();
 
         return liveEvents.docs.map(liveEventFromFirestore);
@@ -277,6 +308,8 @@ class Persistence {
      * @returns A list of `LiveEvent`.
      */
     static async getPersonalLiveEvents(user) {
+        await this.createUserIfNotExistent(user);
+
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalLiveEventsDoc}`).get();
 
         return liveEvents.docs.map(liveEventFromFirestore);
@@ -289,6 +322,8 @@ class Persistence {
      * @returns An `Array<PointOfInterest>` of point of interests.
      */
     static async getPOIsOfUser(username) {
+        await this.createUserIfNotExistent(username);
+
         const pois = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).get();
         
         return pois.docs.map(pointOfInterestFromFirestore);
@@ -301,6 +336,8 @@ class Persistence {
      * @param {AddPointOfInterest} poi Live event data.
      */
     static async addPointOfInterest(user, poi) {
+        await this.createUserIfNotExistent(user);
+
         const liveEventReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).add(poi.toJsObject());
             
         console.info(`Added point of interest ${poi} for user ${user}, identifier: ${liveEventReference.id}.`);
@@ -315,6 +352,8 @@ class Persistence {
      * @param {string} username username of the user in which the point of interest should be found.
      */
     static async removePointOfInterest(poiId, username) {
+        await this.createUserIfNotExistent(username);
+
         const poi = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).doc(poiId).get();
         if(!poi.exists) {
             console.error(`The point of interest with id=${poiId} does not exist in the list of user ${username}.`);
