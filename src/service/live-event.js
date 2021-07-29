@@ -1,7 +1,7 @@
 const LiveEvent = require('../model/live-event');
 const AddLiveEvent = require('../model/request-body/add-live-event');
 
-const UserPersistence = require('../persistence/user-persistence');
+const Persistence = require('../persistence/persistence');
 
 class LiveEventService {
     /**
@@ -17,8 +17,8 @@ class LiveEventService {
         }
         
         
-        return (await UserPersistence.getPersonalLiveEvents(user)).concat(
-            await UserPersistence.getLiveEventsFromFriends(user)
+        return (await Persistence.getPersonalLiveEvents(user)).concat(
+            await Persistence.getLiveEventsFromFriends(user)
         );
     }
     /**
@@ -35,7 +35,7 @@ class LiveEventService {
 
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);
         
-        const opResult = await UserPersistence.addLiveEvent(liveEventToAdd);
+        const opResult = await Persistence.addLiveEvent(liveEventToAdd);
 
         return opResult != null;
     }

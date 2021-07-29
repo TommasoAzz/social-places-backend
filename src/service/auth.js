@@ -1,5 +1,5 @@
 // @ts-nocheck
-const UserAuthentication = require('../persistence/user-authentication');
+const Authentication = require('../persistence/authentication');
 
 class AuthService {
     /**
@@ -9,7 +9,7 @@ class AuthService {
      * @returns the username of the user authenticated if the token is valid, null otherwise.
      */
     static async verifyToken(token) {
-        return await UserAuthentication.verifyToken(token);
+        return await Authentication.verifyToken(token);
     }
 
     /**

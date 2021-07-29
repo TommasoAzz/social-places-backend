@@ -7,7 +7,7 @@ const PointOfInterest = require('../model/point-of-interest');
 const FriendRequest = require('../model/friend-request');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
-class UserPersistence {
+class Persistence {
     /**
      * @type {FirebaseFirestore.Firestore}
      */
@@ -138,6 +138,26 @@ class UserPersistence {
     }
 
     /**
+     * Removes a friendship request from `sender` to `receiver`.
+     * This is not to be confused with `removeFriend(user, friendToRemove)`.
+     * 
+     * @param {string} sender Sender of the friendship request.
+     * @param {string} receiver Receiver of the friendship request.
+     */
+    static async removeFriendRequest(sender, receiver) {
+        const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).where('origin', '==', sender).get();
+        if(friendRequestReference.empty) {
+            console.error(`User ${sender} did not send a friendship request to ${receiver}.`);
+            return;
+        }
+
+        const friendRequestIdentifier = friendRequestReference.docs[0].id;
+        await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).doc(friendRequestIdentifier).delete();
+
+        console.info(`Removed friend request from ${sender} to ${receiver} (the friend request has been approved), identifier: ${friendRequestIdentifier}.`);
+    }
+
+    /**
      * Adds `friendToAdd` to the list of friends of `user`.
      * 
      * @param {string} user username of the user in which `friendToAdd` will be added to.
@@ -177,10 +197,16 @@ class UserPersistence {
         const friendsOfUser = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).where('friend', '==', friendToRemove).get();
         if(friendsOfUser.empty) {
             console.error(`${friendToRemove} is not friend of ${user} therefore no removal happened.`);
+            return;
         }
 
         const friendIdentifier = friendsOfUser.docs[0].id;
         await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).doc(friendIdentifier).delete();
+        const addedFriend = await this._connection.collection(`${this._usersDoc}/${user}/${this._notifyFriendshipConfirmationDoc}`).where('friend', '==', friendToRemove).get();
+        if(!addedFriend.empty) {
+            const addedFriendIdentifier = addedFriend.docs[0].id;
+            await this._connection.collection(`${this._usersDoc}/${user}/${this._notifyFriendshipConfirmationDoc}`).doc(addedFriendIdentifier).delete();
+        }
 
         console.info(`Confirmed friend removal from ${user} of ${friendToRemove} (now they are not friend anymore).`);
     }
@@ -300,7 +326,7 @@ class UserPersistence {
     }
 }
 
-module.exports = UserPersistence;
+module.exports = Persistence;
 
 /**
  * Converts data of a friend to an instance of class `Friend`.

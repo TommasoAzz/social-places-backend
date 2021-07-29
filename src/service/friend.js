@@ -3,7 +3,7 @@ const AddFriendshipRequest = require('../model/request-body/add-friendship-reque
 const AddFriendshipConfirmation = require('../model/request-body/add-friendship-confirmation');
 const RemoveFriendshipRequest = require('../model/request-body/remove-friendship-request');
 
-const UserPersistence = require('../persistence/user-persistence');
+const Persistence = require('../persistence/persistence');
 
 class FriendService {
     /**
@@ -19,7 +19,7 @@ class FriendService {
         }
         
         
-        return await UserPersistence.getFriends(user);
+        return await Persistence.getFriends(user);
     }
 
     /**
@@ -32,16 +32,13 @@ class FriendService {
             console.error(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
             throw TypeError(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
         }
-
-        friendshipRequest.receiver = friendshipRequest.receiver.replace('@gmail.com', '');
-        friendshipRequest.sender = friendshipRequest.sender.replace('@gmail.com', '');
         
-        const receiver = await UserPersistence.getUser(friendshipRequest.receiver);
+        const receiver = await Persistence.getUser(friendshipRequest.receiver);
         
         // eslint-disable-next-line no-unused-vars
         if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0) {
             // No friendship with the receiver user therefore a friend request can be sent.
-            await UserPersistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
+            await Persistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
         }
     }
 
@@ -56,18 +53,18 @@ class FriendService {
             throw TypeError(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
         }
         
-        // The receiver of the friendship request is the current sender.
-        friendshipConfirmation.receiverOfTheFriendshipRequest = friendshipConfirmation.receiverOfTheFriendshipRequest.replace('@gmail.com', '');
-        // The sender of the friendship request is the current receiver.
-        friendshipConfirmation.senderOfTheFriendshipRequest = friendshipConfirmation.senderOfTheFriendshipRequest.replace('@gmail.com', '');
-        
-        const currentReceiver = await UserPersistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
+        const currentReceiver = await Persistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
         
         // eslint-disable-next-line no-unused-vars
         if(currentReceiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.senderOfTheFriendshipRequest).length == 0) {
-            await UserPersistence.addFriend(friendshipConfirmation.receiverOfTheFriendshipRequest, friendshipConfirmation.senderOfTheFriendshipRequest);
-            await UserPersistence.addFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
-            await UserPersistence.notifyAddedFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+            // The receiver of friendship requests add the person who requested it.
+            await Persistence.addFriend(friendshipConfirmation.receiverOfTheFriendshipRequest, friendshipConfirmation.senderOfTheFriendshipRequest);
+            // The request of the friendship adds the person who received the request.
+            await Persistence.addFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+            // The friendship is saved in both users' data. The request that was sent can be removed.
+            await Persistence.removeFriendRequest(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+            // The new friend is added to the list of friends added by the sender of the friendship request in order to receive a notification.
+            await Persistence.notifyAddedFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
         }
     }
 
@@ -85,8 +82,8 @@ class FriendService {
         friendshipRemoval.receiver = friendshipRemoval.receiver.replace('@gmail.com', '');
         friendshipRemoval.sender = friendshipRemoval.sender.replace('@gmail.com', '');
 
-        await UserPersistence.removeFriend(friendshipRemoval.sender, friendshipRemoval.receiver);
-        await UserPersistence.removeFriend(friendshipRemoval.receiver, friendshipRemoval.sender);
+        await Persistence.removeFriend(friendshipRemoval.sender, friendshipRemoval.receiver);
+        await Persistence.removeFriend(friendshipRemoval.receiver, friendshipRemoval.sender);
     }
 }
 

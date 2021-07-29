@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 const FirebaseAuthentication = require('firebase-admin').auth;
 
-class UserAuthentication {
+class Authentication {
     /**
      * @type {FirebaseAuthentication.Auth}
      */
@@ -41,4 +41,4 @@ class UserAuthentication {
     }
 }
 
-module.exports = UserAuthentication;
+module.exports = Authentication;

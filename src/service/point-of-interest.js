@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-unused-vars
 const Friend = require('../model/friend');
+// eslint-disable-next-line no-unused-vars
 const PointOfInterest = require('../model/point-of-interest');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
-const UserPersistence = require('../persistence/user-persistence');
+const Persistence = require('../persistence/persistence');
 
 class PointOfInterestService {
     /**
@@ -18,7 +19,7 @@ class PointOfInterestService {
             throw TypeError(`Argument ${user} is not of type string`);
         }
         
-        return await UserPersistence.getPOIsOfUser(user);
+        return await Persistence.getPOIsOfUser(user);
     }
 
     /**
@@ -39,12 +40,12 @@ class PointOfInterestService {
             throw TypeError(`Argument ${friend} is not of type string`);
         }
 
-        const friendsOfFriend = await UserPersistence.getFriends(friend);
+        const friendsOfFriend = await Persistence.getFriends(friend);
         if(!friendsOfFriend.map((f) => f.friendUsername).includes(user)) {
             return null;
         }
         
-        return (await UserPersistence.getPOIsOfUser(friend)).filter((poi) => poi.visibility.toLowerCase() == 'pubblico');
+        return (await Persistence.getPOIsOfUser(friend)).filter((poi) => poi.visibility.toLowerCase() == 'pubblico');
     }
 
     /**
@@ -59,7 +60,7 @@ class PointOfInterestService {
             throw TypeError(`Argument ${poi} is not of type AddPointOfInterest`);  
         }
 
-        return await UserPersistence.addPointOfInterest(user, poi);
+        return await Persistence.addPointOfInterest(user, poi);
     }
 
     /**
@@ -78,7 +79,7 @@ class PointOfInterestService {
             throw TypeError(`Argument ${username} is not of type string`);
         }
 
-        await UserPersistence.removePointOfInterest(poiId, username);
+        await Persistence.removePointOfInterest(poiId, username);
     }
 }
 
