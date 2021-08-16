@@ -1,4 +1,4 @@
-# Server per Sistemi Context-Aware
+# API per server progetto di Sistemi Context-Aware
 
 ## Creazione del file .env
 - Creare un file `.env`
