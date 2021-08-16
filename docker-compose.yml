@@ -1,10 +1,21 @@
 version: '3'
 services:
   api:
-    build: ./
+    build: ./api/
     container_name: api
     env_file:
-      - ./.env
+      - ./api/.env
     restart: unless-stopped
     ports:
       - 3000:3000
+    networks:
+      - network
+  context_aware:
+    build: ./contextaware/
+    container_name: context_aware
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
