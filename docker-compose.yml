@@ -11,7 +11,7 @@ services:
     networks:
       - network
   context_aware:
-    build: ./contextaware/
+    build: ./context_aware/
     container_name: context_aware
     networks:
       - network
