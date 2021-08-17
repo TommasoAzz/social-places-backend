@@ -3,6 +3,7 @@ const Friend = require('../model/friend');
 // eslint-disable-next-line no-unused-vars
 const PointOfInterest = require('../model/point-of-interest');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 
 const Persistence = require('../persistence/persistence');
 
@@ -45,7 +46,7 @@ class PointOfInterestService {
             return null;
         }
         
-        return (await Persistence.getPOIsOfUser(friend)).filter((poi) => poi.visibility.toLowerCase() == 'pubblico');
+        return (await Persistence.getPOIsOfUser(friend)).filter((poi) => poi.visibility.toLowerCase() == 'public');
     }
 
     /**
@@ -64,22 +65,18 @@ class PointOfInterestService {
     }
 
     /**
-     * Removes a point of interest (identified by `poiId`) owned by user identified with `username`.
+     * Removes a point of interest (identified by `removePointOfInterest.poiId`) owned by user identified with `removePointOfInterest.user`.
      * 
-     * @param {string} poiId Identifier of the point of interest to remove. 
-     * @param {string} username Username of the user owning the point of interest.
+     * @param {RemovePointOfInterest} removePointOfInterest Request of removal of point of interest.
      */
-    static async removePointOfInterest(poiId, username) {
-        if(!(typeof(poiId) === 'string')) {
-            console.error(`Argument ${poiId} is not of type string`);
-            throw TypeError(`Argument ${poiId} is not of type string`);
-        }
-        if(!(typeof(username) === 'string')) {
-            console.error(`Argument ${username} is not of type string`);
-            throw TypeError(`Argument ${username} is not of type string`);
+    static async removePointOfInterest(removePointOfInterest) {
+        if(!(removePointOfInterest instanceof RemovePointOfInterest)) {
+            console.error(`Argument ${removePointOfInterest} is not of type RemovePointOfInterest`);
+            throw TypeError(`Argument ${removePointOfInterest} is not of type RemovePointOfInterest`);  
         }
 
-        await Persistence.removePointOfInterest(poiId, username);
+
+        await Persistence.removePointOfInterest(removePointOfInterest.poiId, removePointOfInterest.user);
     }
 }
 

@@ -3,6 +3,7 @@ let router = express.Router();
 const pointOfInterest = require('../service/point-of-interest');
 const auth = require('../service/auth');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 const APIError = require('../model/error');
 
 router.get('/', async (req, res) => {
@@ -81,8 +82,9 @@ router.delete('/remove', async (req, res) => {
         return;
     }
 
-    let poiId = body.poiId;
-    await pointOfInterest.removePointOfInterest(poiId, user);
+    let removePointOfInterest = new RemovePointOfInterest(user, body.poiId);
+
+    await pointOfInterest.removePointOfInterest(removePointOfInterest);
 
     res.status(200).send();
 });
