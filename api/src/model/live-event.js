@@ -7,11 +7,13 @@ class LiveEvent {
      * 
      * @param {string} id Identifier.
      * @param {string} address Address in which the event takes place.
+     * @param {number} latitude Latitude of the place.
+     * @param {number} longitude Longitude of the place.
      * @param {string} name A descriptive name for the event.
      * @param {string} owner Username of the user that created the event.
      * @param {number} expirationDate Expiration date in ms
      */
-    constructor(id, address, name, owner, expirationDate) {
+    constructor(id, address, latitude, longitude, name, owner, expirationDate) {
         if(!(typeof(id) === 'string')) {
             console.error(`Argument ${id} is not a string`);
             throw TypeError(`Argument ${id} is not a string`);
@@ -19,6 +21,14 @@ class LiveEvent {
         if(!(typeof(address) === 'string')) {
             console.error(`Argument ${address} is not a string`);
             throw TypeError(`Argument ${address} is not a string`);
+        }
+        if(!(typeof(latitude) === 'number')) {
+            console.error(`Argument ${latitude} is not a number`);
+            throw TypeError(`Argument ${latitude} is not a number`);
+        }
+        if(!(typeof(longitude) === 'number')) {
+            console.error(`Argument ${longitude} is not a number`);
+            throw TypeError(`Argument ${longitude} is not a number`);
         }
         if(!(typeof(name) === 'string')) {
             console.error(`Argument ${name} is not a string`);
@@ -35,6 +45,8 @@ class LiveEvent {
 
         this.id = id;
         this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.name = name;
         this.owner = owner;
         this.expirationDate = expirationDate;
@@ -51,9 +63,11 @@ class LiveEvent {
         return new LiveEvent(
             '',
             addLiveEvent.address,
+            addLiveEvent.latitude,
+            addLiveEvent.longitude,
             addLiveEvent.name,
             addLiveEvent.owner,
-            addLiveEvent.expiresAfter + Date.now()
+            addLiveEvent.expiresAfter + Date.now(),
         );
     }
 
@@ -65,6 +79,8 @@ class LiveEvent {
     toJsObject() {
         return {
             address: this.address,
+            latitude: this.latitude,
+            longitude: this.longitude,
             name: this.name,
             owner: this.owner,
             expirationDate: this.expirationDate

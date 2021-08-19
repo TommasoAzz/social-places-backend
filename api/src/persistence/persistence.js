@@ -395,6 +395,8 @@ function liveEventFromFirestore(document, _, __) {
     return new LiveEvent(
         document.id,
         document.data().address,
+        document.data().latitude,
+        document.data().longitude,
         document.data().name,
         document.data().owner,
         parseInt(document.data().expirationDate)

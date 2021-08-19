@@ -41,7 +41,7 @@ router.post('/add', async (req, res) => {
         return;
     }
 
-    let addLiveEvent = new AddLiveEvent(body.expiresAfter, body.owner, body.name, body.address);
+    let addLiveEvent = new AddLiveEvent(body.expiresAfter, body.owner, body.name, body.address, body.latitude, body.longitude);
 
     const wasAdded = await liveEvent.addLiveEvent(addLiveEvent);
 
