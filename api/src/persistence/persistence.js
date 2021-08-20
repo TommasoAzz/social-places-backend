@@ -5,7 +5,7 @@ const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
 const PointOfInterest = require('../model/point-of-interest');
 const FriendRequest = require('../model/friend-request');
-const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
 
 class Persistence {
     /**
@@ -333,7 +333,7 @@ class Persistence {
      * Adds a new point of interest in the list of points of interest of the user.
      * 
      * @param {string} user User which owns this point of interest.
-     * @param {AddPointOfInterest} poi Live event data.
+     * @param {AddPointOfInterestPoi} poi Live event data.
      * @returns the point of interest's id if added, `null` if the user has already a point of interest in their list with the same name or address.
      */
     static async addPointOfInterest(user, poi) {

@@ -2,7 +2,7 @@
 const Friend = require('../model/friend');
 // eslint-disable-next-line no-unused-vars
 const PointOfInterest = require('../model/point-of-interest');
-const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
 const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 
 const Persistence = require('../persistence/persistence');
@@ -53,11 +53,11 @@ class PointOfInterestService {
      * Adds `poi` to the list of points of interest of `user`.
      * 
      * @param {string} user User asking to update their list of points of interest.
-     * @param {AddPointOfInterest} poi Point of interest to add.
+     * @param {AddPointOfInterestPoi} poi Point of interest to add.
      * @returns the point of interest's id if added, `null` if the user has already a point of interest in their list with the same name or address.
      */
     static async addPointOfInterest(user, poi) {
-        if(!(poi instanceof AddPointOfInterest)) {
+        if(!(poi instanceof AddPointOfInterestPoi)) {
             console.error(`Argument ${poi} is not of type AddPointOfInterest`);
             throw TypeError(`Argument ${poi} is not of type AddPointOfInterest`);  
         }

@@ -2,9 +2,10 @@ let express = require('express');
 let router = express.Router();
 const pointOfInterest = require('../service/point-of-interest');
 const auth = require('../service/auth');
-const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
 const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 const APIError = require('../model/error');
+const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 router.get('/', async (req, res) => {
     const query = req.query;
@@ -53,16 +54,19 @@ router.post('/add', async (req, res) => {
     }
 
     let addPointOfInterest = new AddPointOfInterest(
-        body.poi.address,
-        body.poi.type,
-        body.poi.latitude,
-        body.poi.longitude,
-        body.poi.name,
-        body.poi.phoneNumber,
-        body.poi.visibility,
-        body.poi.url
+        body.user,
+        new AddPointOfInterestPoi(
+            body.poi.address,
+            body.poi.type,
+            body.poi.latitude,
+            body.poi.longitude,
+            body.poi.name,
+            body.poi.phoneNumber,
+            body.poi.visibility,
+            body.poi.url
+        )
     );
-    const poiId = await pointOfInterest.addPointOfInterest(body.user, addPointOfInterest);
+    const poiId = await pointOfInterest.addPointOfInterest(addPointOfInterest.user, addPointOfInterest.addPointOfInterestPoi);
 
     if(poiId === null) {
         res.json(
