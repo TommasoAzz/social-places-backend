@@ -66,7 +66,7 @@ router.post('/add', async (req, res) => {
             body.poi.url
         )
     );
-    const poiId = await pointOfInterest.addPointOfInterest(addPointOfInterest.user, addPointOfInterest.addPointOfInterestPoi);
+    const poiId = await pointOfInterest.addPointOfInterest(addPointOfInterest.user, addPointOfInterest.poi);
 
     if(poiId === null) {
         res.json(
