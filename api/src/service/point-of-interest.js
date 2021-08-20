@@ -54,6 +54,7 @@ class PointOfInterestService {
      * 
      * @param {string} user User asking to update their list of points of interest.
      * @param {AddPointOfInterest} poi Point of interest to add.
+     * @returns the point of interest's id if added, `null` if the user has already a point of interest in their list with the same name or address.
      */
     static async addPointOfInterest(user, poi) {
         if(!(poi instanceof AddPointOfInterest)) {

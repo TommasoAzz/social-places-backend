@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
 
     if(pois === null) { // friend and user are not friends.
         console.error(`> Status code 400 - ${user} and ${query.friend} are not friends.`);
-        res.status(400).json(`${user} and ${query.friend} are not friends.`).send();
+        res.status(400).json(APIError.build(`${user} and ${query.friend} are not friends.`)).send();
     } else { // friend and users are friends, pois can be empty.
         res.status(200).json(pois).send();
     }
@@ -48,7 +48,7 @@ router.post('/add', async (req, res) => {
     let user = await auth.verifyToken(token);
     if(user === null || user != body.user) {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
-        res.status(403).json(`User from the authentication service is ${user} and that from query is ${body.user}.`).send();
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
         return;
     }
 
@@ -63,8 +63,16 @@ router.post('/add', async (req, res) => {
         body.poi.url
     );
     const poiId = await pointOfInterest.addPointOfInterest(body.user, addPointOfInterest);
-    
-    res.json(poiId).status(200).send();
+
+    if(poiId === null) {
+        res.json(
+            APIError.build(
+                'Trying to add a point of interest with a name or address already existent in the user\'s list of points of interest.'
+            )
+        ).status(400).send();
+    } else {            
+        res.json(poiId).status(200).send();
+    }
 });
 
 router.delete('/remove', async (req, res) => {

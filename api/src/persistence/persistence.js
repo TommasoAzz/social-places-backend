@@ -334,15 +334,23 @@ class Persistence {
      * 
      * @param {string} user User which owns this point of interest.
      * @param {AddPointOfInterest} poi Live event data.
+     * @returns the point of interest's id if added, `null` if the user has already a point of interest in their list with the same name or address.
      */
     static async addPointOfInterest(user, poi) {
         await this.createUserIfNotExistent(user);
 
-        const liveEventReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).add(poi.toJsObject());
-            
-        console.info(`Added point of interest ${poi} for user ${user}, identifier: ${liveEventReference.id}.`);
+        // Checking for points of interest with same name or address.
+        const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).where('name', '==', poi.name).get();
+        const personalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).where('address', '==', poi.address).get();
+        if(!personalDuplicatedName.empty && !personalDuplicatedAddr.empty) {
+            return null;
+        }
 
-        return liveEventReference.id;
+        const poiReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).add(poi.toJsObject());
+            
+        console.info(`Added point of interest ${poi} for user ${user}, identifier: ${poiReference.id}.`);
+
+        return poiReference.id;
     }
 
     /**
