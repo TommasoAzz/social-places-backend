@@ -19,7 +19,7 @@ class LiveEventService {
         
         return (await Persistence.getPersonalLiveEvents(user)).concat(
             await Persistence.getLiveEventsFromFriends(user)
-        );
+        ).filter((liveEvent) => liveEvent.expirationDate > Date.now());
     }
     /**
      * Publishes a new live event.
