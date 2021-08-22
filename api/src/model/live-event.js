@@ -60,6 +60,8 @@ class LiveEvent {
      * @returns an instance of this class.
      */
     static fromLiveEvent(addLiveEvent) {
+        const currentDate = Date.now(); // It's in ms.
+        const expiresAfter = addLiveEvent.expiresAfter * 60 * 1000; // addLiveEvent.expiresAfter is in minutes (that's why "* 60 * 1000")
         return new LiveEvent(
             '',
             addLiveEvent.address,
@@ -67,7 +69,7 @@ class LiveEvent {
             addLiveEvent.longitude,
             addLiveEvent.name,
             addLiveEvent.owner,
-            addLiveEvent.expiresAfter + Date.now(),
+            currentDate + expiresAfter,
         );
     }
 
