@@ -7,7 +7,10 @@ import model_utility
 from model_utility import model
 app = Flask(__name__)
 
+
+# Same name of POI in firebase
 category = ["leisure","restaurant","sport"]
+
 @app.route("/recommendation/places", methods=["GET"])
 def recommend_places():
     """
