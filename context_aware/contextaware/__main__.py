@@ -1,43 +1,37 @@
 #!/usr/bin/env python3
 
+from context_aware.contextaware.classifier.classifier import Classifier
 from flask import Flask, request, jsonify
-import datetime
+from datetime import datetime
 import pandas as pd
-import model_utility
+from os.path import join
 from model_utility import model
+
 app = Flask(__name__)
-
-
-# Same name of POI in firebase
-category = ["leisure","restaurant","sport"]
 
 @app.route("/recommendation/places", methods=["GET"])
 def recommend_places():
     """
     Returns the recommended places (points of interest) to visit at the given parameters found as arguments.
     """
+    # Arguments
+    human_activity = request.args.get('human_activity')
+    date_time = request.args.get('date_time')
 
-    # if model == None:
-    #     model_utility.load_model()
-    #     print(model)
-
-    human_activity = request.args.get('ha')
-    date_string = request.args.get('date')
+    # Arguments preprocessing
     #REPLACE '+' WITH %2b before the req
-    date = datetime.datetime.strptime(date_string,'%Y-%m-%d %H:%M:%S%z')
-    
-
-    time_of_day = (date.hour * 3600) + (date.minute * 60) + date.second
+    date_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S%z')
+    seconds = (date_time.hour * 3600) + (date_time.minute * 60) + date_time.second
     # 0 = Monday, 6 = Sunday
-    day_of_week = date.weekday()
+    day_of_week = date_time.weekday()
     # time_of_day,day_of_week,har
-    model_request = pd.DataFrame(columns=["time_of_day","day_of_week","har"])
-    model_request.loc[0] = [time_of_day,day_of_week,human_activity]
+    new_record = pd.DataFrame(columns=["time_of_day", "day_of_week", "har"])
+    new_record.loc[0] = [seconds, day_of_week, human_activity]
     
-    activity_pred = model.predict(model_request)
-    list_res = activity_pred.tolist()
-    json_res = {}
-    json_res["category_response"] = category[list_res[0]]
+    predicted_activity = Classifier.predict(new_record)
+    json_res = {
+        "category_response": predicted_activity
+    }
     return json_res
 
 
@@ -57,4 +51,9 @@ def recommend_places():
 #     pass
 
 if __name__ == "__main__":
+    # Instanciating the singleton Classifier.
+    Classifier(
+        cached_model_filename = join('classifier', 'model.sav'),
+        train_dataset_filename = join('classifier', 'dataset.csv')
+    )
     app.run("0.0.0.0", 4000)
