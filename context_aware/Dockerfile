@@ -1,4 +1,4 @@
-FROM python:3.9.6-alpine
+FROM python:3.9.7
 
 RUN mkdir /context_aware/
 WORKDIR /context_aware/
