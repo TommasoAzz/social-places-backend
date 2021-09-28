@@ -3,10 +3,11 @@
 from context_aware.contextaware.classifier.classifier import ActivityClassifier
 from flask import Flask, request
 from datetime import datetime
+from __future__ import annotations
 import pandas as pd
 
 app = Flask(__name__)
-classifier = ActivityClassifier.get_instance()
+classifier: ActivityClassifier = ActivityClassifier.get_instance()
 
 @app.route("/recommendation/places", methods=["GET"])
 def recommend_places():
@@ -46,12 +47,33 @@ def recommend_places():
 #     pass
 
 
-# @app.route("/recommendation/train", methods=["POST"])
-# def train_again_model():
-#     """
-#     Train again model.
-#     """
-#     pass
+@app.route("/recommendation/train", methods=["POST"])
+def train_again_model():
+    """
+    Train again model given the same data method recommend_places would receive plus the
+    expected output.
+    """
+    # Arguments
+    latitude = request.args.get('latitude')
+    longitude = request.args.get('longitude')
+    human_activity = request.args.get('human_activity')
+    date_time = request.args.get('date_time')
+    place_category = request.args.get('place_category')
+
+    # Arguments preprocessing
+    #REPLACE '+' WITH %2b before the req
+    date_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S%z')
+    seconds = (date_time.hour * 3600) + (date_time.minute * 60) + date_time.second
+    # 0 = Monday, 6 = Sunday
+    day_of_week = date_time.weekday()
+    
+    # New record creation
+    new_record = pd.DataFrame(columns=["latitude", "longitude", "time_of_day", "day_of_week", "human_activity", "place_category"])
+    new_record.loc[0] = [latitude, longitude, seconds, day_of_week, human_activity, place_category]
+
+    classifier.update_retrain(new_record)
+    return None
+    
 
 if __name__ == "__main__":
     app.run("0.0.0.0", 4000)
