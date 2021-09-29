@@ -14,10 +14,8 @@ import pickle
 class ActivityClassifier:
     
     def __init__(self) -> None:
-        # self.cached_model_filename: str = "contextaware/classifier/model.sav"
-        self.cached_model_filename: str = "classifier/model.sav"
-        # self.train_dataset_filename: str = "contextaware/classifier/dataset.csv"
-        self.train_dataset_filename: str = "classifier/dataset.csv"
+        self.cached_model_filename: str = "contextaware/classifier/model.sav"
+        self.train_dataset_filename: str = "contextaware/classifier/dataset.csv"
         self.train_dataset: pd.DataFrame = pd.read_csv(self.train_dataset_filename)
         self.model: DecisionTreeClassifier = pickle.load(open(self.cached_model_filename, mode='rb'))
         self.oversampler = RandomOverSampler(sampling_strategy='minority', random_state=17)
@@ -47,18 +45,6 @@ class ActivityClassifier:
     List of human activity columns.
     """
 
-    """ 
-    def get_instance() -> ActivityClassifier:
-        
-        Returns an instance of this class.
-        
-        if not ActivityClassifier.__instance:
-            ActivityClassifier.__instance = ActivityClassifier.__Classifier()
-            ActivityClassifier.columns_list = ActivityClassifier.__instance.train_dataset.columns
-
-        return ActivityClassifier.__instance
-    """
-
     def __get_dummies_human_activity(self,X: pd.DataFrame) -> pd.DataFrame:
         """
         One-hot encodes the human_activity column (from one column with categorical values from human_activities
@@ -85,13 +71,6 @@ class ActivityClassifier:
         with open(self.cached_model_filename, 'wb') as model_file:
             pickle.dump(self.model, model_file)
 
-    def __load_model(self):
-        """
-        Loads the current instance of the model from a binary file.
-        """
-        with open(self.cached_model_filename, 'rb') as model_file:
-            self.model = pickle.load(model_file)
-
 
     def update_retrain(self, new_record: pd.DataFrame):
         """
@@ -110,7 +89,7 @@ class ActivityClassifier:
         # One hot encoding columns human_activity and place_category (target or y).
         X = self.__get_dummies_human_activity(X_oversampled)
         y = self.__one_hot_encode_target(y_oversampled)
-        print(X)
+
         self.model = self.model.fit(X, y)
 
         self.__save_model()
@@ -131,7 +110,7 @@ class ActivityClassifier:
 
     def test_model(self) -> dict:
         """
-        Save the old model and test it on actual dataset
+        Trains the dataset and returns the accuracy.
         """
         # Separating X and y
         dataset_copy = self.train_dataset.copy()
@@ -145,17 +124,14 @@ class ActivityClassifier:
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, test_size=0.20, random_state=17)
 
-
         testing_model = self.model.fit(X_train, y_train)
 
         y_pred = testing_model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         number_correct_samples = accuracy_score(y_test, y_pred, normalize=False)
-        print("ACCURACY ",accuracy)
         train_result = {
-            "accuracy":accuracy,
-            "number_correct_samples":number_correct_samples
+            "accuracy": float(accuracy),
+            "correct_samples": int(number_correct_samples)
         }
-        print(train_result)
-        return accuracy
+        return train_result
         

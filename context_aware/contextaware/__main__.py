@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-# from contextaware.classifier.classifier import ActivityClassifier
-from classifier.classifier import ActivityClassifier
-from flask import Flask, request, jsonify
+
+from contextaware.classifier.classifier import ActivityClassifier
+from flask import Flask, request
 from datetime import datetime
 import pandas as pd
 
 app = Flask(__name__)
-classifier: ActivityClassifier = ActivityClassifier()
+classifier = ActivityClassifier()
 
-@app.route("/recommendation/testmodel", methods=["GET"])
+@app.route("/recommendation/accuracy", methods=["GET"])
 def test_model():
+    """
+    Returns the current accuracy of the model.
+    """
     test_result = classifier.test_model()
-    
-    print("RESULT ",type(test_result))
 
-    return jsonify(test_result)
-
-@app.route("/", methods=["GET"])
-def home():
-    print("HOMEEEEEEEEEEEEEEE")
-    return "home"
+    return test_result, 200
 
 @app.route("/recommendation/places", methods=["GET"])
 def recommend_places():
@@ -28,7 +24,6 @@ def recommend_places():
     Returns the recommended places (points of interest) to visit at the given parameters found as arguments.
     """
     # Arguments
-    print("IN PREDICT")
     latitude = request.args.get('latitude')
     longitude = request.args.get('longitude')
     human_activity = request.args.get('human_activity')
@@ -42,9 +37,10 @@ def recommend_places():
     day_of_week = date_time.weekday()
     
     # New record creation
-    # new_record = pd.DataFrame(columns=["latitude", "longitude", "time_of_day", "day_of_week", "human_activity"])
-    new_record = pd.DataFrame(columns=['place_lat', 'place_lon', 'time_of_day', 'day_of_week', 'har_bike',
-       'har_bus', 'har_car', 'har_still', 'har_walk'])
+    new_record = pd.DataFrame(columns=[
+        'place_lat', 'place_lon', 'time_of_day', 'day_of_week', 'har_bike',
+        'har_bus', 'har_car', 'har_still', 'har_walk'
+        ])
     
     har_bike = "bike" == human_activity
     har_bus = "bus" == human_activity
@@ -55,11 +51,11 @@ def recommend_places():
     new_record.loc[0] = [latitude, longitude, seconds, day_of_week, har_bike, har_bus, har_car, har_still, har_walk]
     
     # Prediction
-    predicted_activity = classifier.predict(new_record)
-    json_res = {
-        "category_response": predicted_activity
+    predicted_place_cat = classifier.predict(new_record)
+    response = {
+        "place_category": predicted_place_cat
     }
-    return json_res
+    return response, 200
 
 
 # @app.route("/recommendation/validity", methods="POST")
@@ -73,8 +69,8 @@ def recommend_places():
 @app.route("/recommendation/train", methods=["POST"])
 def train_again_model():
     """
-    Train again model given the same data method recommend_places would receive plus the
-    expected output.
+    Train again the model, given the same data the method recommend_places would receive, plus the
+    expected output. Returns the new accuracy.
     """
     # Arguments
     latitude = request.args.get('latitude')
@@ -91,15 +87,18 @@ def train_again_model():
     day_of_week = date_time.weekday()
     
     # New record creation
-    new_record = pd.DataFrame(columns=['place_lat', 'place_lon','place_category', 'time_of_day', 'day_of_week', 'human_activity'])
+    new_record = pd.DataFrame(columns=[
+        'place_lat', 'place_lon','place_category', 'time_of_day', 'day_of_week', 'human_activity'
+        ])
 
     new_record.loc[0] = [latitude, longitude, place_category,seconds, day_of_week, human_activity]
 
     classifier.update_retrain(new_record)
-    
-    return "retrained"
+
+    test_result = classifier.test_model()
+
+    return test_result, 200
     
 
 if __name__ == "__main__":
-    print("RUNNING SERVER")
-    app.run(host='localhost', port=4000)
+    app.run(host='0.0.0.0', port=4000)
