@@ -12,20 +12,13 @@ from typing import Tuple
 import pickle
 
 class ActivityClassifier:
-    
     def __init__(self) -> None:
-        self.cached_model_filename: str = "contextaware/classifier/model.sav"
-        self.train_dataset_filename: str = "contextaware/classifier/dataset.csv"
+        self.cached_model_filename: str = "contextaware/classifier/working_model.sav"
+        self.train_dataset_filename: str = "contextaware/classifier/working_dataset.csv"
         self.train_dataset: pd.DataFrame = pd.read_csv(self.train_dataset_filename)
         self.model: DecisionTreeClassifier = pickle.load(open(self.cached_model_filename, mode='rb'))
         self.oversampler = RandomOverSampler(sampling_strategy='minority', random_state=17)
         ActivityClassifier.columns_list = self.train_dataset.columns
-
-
-    #__instance: __Classifier = None
-    """
-    Instance of inner class __Classifier.
-    """
 
 
     targets_list: Tuple[str] = ("leisure", "restaurants", "sport")

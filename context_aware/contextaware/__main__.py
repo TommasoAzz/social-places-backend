@@ -30,7 +30,6 @@ def recommend_places():
     date_time = request.args.get('date_time')
 
     # Arguments preprocessing
-    #REPLACE '+' WITH %2b before the req
     date_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S%z')
     seconds = (date_time.hour * 3600) + (date_time.minute * 60) + date_time.second
     # 0 = Monday, 6 = Sunday
