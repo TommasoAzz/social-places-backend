@@ -31,7 +31,8 @@ const options = {
 };
 
 // Routes configuration
-const { friends, liveEvents, pointsOfInterest } = require('./controller');
+//const { friends, liveEvents, pointsOfInterest } = require('./controller');
+const { friends, liveEvents, pointsOfInterest, recommendation } = require('./controller');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -47,6 +48,8 @@ app.use('/friends', friends);
 app.use('/live-events', liveEvents);
 
 app.use('/points-of-interest', pointsOfInterest);
+
+app.use('/recommendation', recommendation);
 
 // Server setup
 const port = environment.serverPort;
