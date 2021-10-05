@@ -1,138 +1,95 @@
 const superagent = require('superagent');
-const options_accuracy = {
-    hostname: 'localhost',
-    port: 4000,
-    path: '/recommendation/accuracy',
-    method: 'GET'
-},
+// eslint-disable-next-line no-unused-vars
+const ValidationRequest = require('../model/request-body/validation-request');
+// eslint-disable-next-line no-unused-vars
+const RecommendationRequest = require('../model/request-body/recommendation-request');
+const RecommendationAccuracy = require('../model/recommendation-accuracy');
+const RecommendedPlace = require('../model/recommended-place');
 
- options_validity = {
-    hostname: 'localhost',
-    port: 4000,
-    path: '/recommendation/validity',
-    method: 'GET'
-},
- options_places = {
-    hostname: 'localhost',
-    port: 4000,
-    path: '/recommendation/places',
-    method: 'GET'
-},
- options_post = {
-    hostname: 'localhost',
-    port: 4000,
-    path: '/recommendation/train',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
+class RecommendationService {
+    /**
+     * @type {string}
+     */
+    static _api_url;
+    
+    /**
+     * Sets the URL for the Context Aware REST APIs.
+     * @param {string} apiUrl 
+     */
+    static set api_url(apiUrl) {
+        this._api_url = apiUrl + 'recommendation/';
     }
-  }
-class recommendationService{
 
-    static checkQueryType(query){
-        const latitude = query.latitude,
-        longitude = query.longitude,
-        human_activity = query.human_activity,
-        date_time = query.date_time
-        
-
-        if(!(typeof(latitude) === 'float')) {
-            console.error(`Argument ${latitude} is not a float`);
-            throw TypeError(`Argument ${latitude} is not a float`);
-        }
-        if(!(typeof(longitude) === 'float')) {
-            console.error(`Argument ${longitude} is not a float`);
-            throw TypeError(`Argument ${longitude} is not a float`);
-        }
-        if(!(typeof(human_activity) === 'string')) {
-            console.error(`Argument ${human_activity} is not a string`);
-            throw TypeError(`Argument ${human_activity} is not a string`);
-        }
-
-        if(!(typeof(date_time) === 'string')) {
-            console.error(`Argument ${date_time} is not a string`);
-            throw TypeError(`Argument ${date_time} is not a string`);
-        }
-
-        if(query.hasOwnProperty('place_category')){
-            const place_category = query.place_category
-            if(!(typeof(place_category) === 'string')) {
-                console.error(`Argument ${place_category} is not a string`);
-                throw TypeError(`Argument ${place_category} is not a string`);
-            }
-        }
-    }
-    static async getValidity(query) {
-        console.log("DENTRO VALIDITY SERVICE");
-        
-        //this.checkQueryType(query);
-
-        var validity_result = {}
+    /**
+     * 
+     * @param {ValidationRequest} validationRequest 
+     * @returns 
+     */
+    static async shouldAdvisePlaceCategory(validationRequest) {
         try{
-            validity_result = await superagent
-            .get('http://context_aware:4000/recommendation/validity')
-            .query(query);
-            let response = validity_result.text;
-            return response;
-        }
-        catch(error){
-            console.log("Validity get this error ",error);
-        }
-        console.log("RITORNO VALIDITY SERVICE");
+            const validity_result = await superagent.get(this._api_url + 'validity').query(validationRequest);
 
-        return null;
+            const body = validity_result.body;
+
+            return body;
+        } catch(error) {
+            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+
+            return null;
+        }
     }
     
-    static async getPlace(query) {
-        this.checkQueryType(query);
-        var places_result = {}
+    static async recommendPlaceCategory(query) {
         try{
-            places_result = await superagent
-            .get('http://context_aware:4000/recommendation/places')
-            .query(query);
-            let response = validity_result.text;
-            return response;
-        }
-        catch(error){
-            console.log("Places_result get this error ",error);
-        }
-        return null;
+            const places_result = await superagent.get(this._api_url + 'places').query(query);
 
+            const body = places_result.body;
+
+            return new RecommendedPlace(body.place_category);
+        } catch(error) {
+            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+
+            return null;
+        }
     }
 
-    static async getAccuracy(query) {
-        this.checkQueryType(query);
-
-        var accuracy_result = {}
+    /**
+     * Asks for the current model accuracy.
+     * 
+     * @returns a `RecommendationAccuracy` instance.
+     */
+    static async computeModelAccuracy() {
         try{
-            accuracy_result = await superagent
-            .get('http://context_aware:4000/recommendation/accuracy')
-            .query(query);
-            let response = validity_result.text;
-            return response;
-        }
-        catch(error){
-            console.log("Accuracy get this error ",error);
-        }
-        return null;
+            const accuracy_result = await superagent.get(this._api_url + 'accuracy');
 
+            const body = accuracy_result.body;
+
+            return new RecommendationAccuracy(body.accuracy, body.correct_samples);
+        } catch(error) {
+            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+
+            return null;
+        }
     }
 
-    static async testModel(body){
-        this.checkQueryType(body);
-        var train_result = {}
+    /**
+     * 
+     * @param {RecommendationRequest} recommendationRequest 
+     * @returns 
+     */
+    static async trainAgainModel(recommendationRequest) {
         try{
-            train_result = await superagent
-            .post('http://context_aware:4000/recommendation/train')
-            .query(body);
-            let response = validity_result.text;
-            return response;
-        }
-        catch(error){
-            console.log("Test model get this error ",error);
-        }
-        return null;
-        
+            const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
+
+            const body = train_result.body;
+
+            return new RecommendationAccuracy(body.accuracy, body.correct_samples);
+        } catch(error) {
+            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+
+            return null;
+        }   
     }
 }
-module.exports = recommendationService;
+
+module.exports = RecommendationService;

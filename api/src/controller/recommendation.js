@@ -1,12 +1,11 @@
 let express = require('express');
 let router = express.Router();
 
-const recommendationService = require('../service/recommendation');
+const recommendation = require('../service/recommendation');
 const auth = require('../service/auth');
 const APIError = require('../model/error');
-
-
-
+const RecommendationRequest = require('../model/request-body/recommendation-request');
+const ValidationRequest = require('../model/request-body/validation-request');
 
 router.get('/accuracy', async (req, res) => {
     const query = req.query;
@@ -22,8 +21,14 @@ router.get('/accuracy', async (req, res) => {
         res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
         return;
     }
-    
-    res.json(await recommendationService.getAccuracy()).status(200).send();
+
+    const result = await recommendation.computeModelAccuracy();
+
+    if(result !== null) {
+        res.json(result).status(200).send();
+    } else {
+        res.status(400).send();
+    }
 });
 
 router.get('/places', async (req, res) => {
@@ -40,18 +45,28 @@ router.get('/places', async (req, res) => {
         res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
         return;
     }
-    const place_predicted = await recommendationService.getPlace(query)
-    let js = {"place_predicted":place_predicted}
-    res.json(js).status(200).send();
+
+    const recommendationRequest = new RecommendationRequest(
+        user,
+        parseFloat(query.latitude + ''),
+        parseFloat(query.longitude + ''),
+        query.human_activity + '',
+        parseInt(query.date_time + '')
+    );
+
+    const result = await recommendation.recommendPlaceCategory(recommendationRequest);
+
+    if(result !== null) {
+        res.json(result).status(200).send();
+    } else {
+        res.status(400).send();
+    }
 });
 
 router.get('/validity', async (req, res) => {
-    console.log("DENTRO VALIDITY");
-
-    // need cast of element of query
     const query = req.query;
     const token = auth.parseHeaders(req.headers);
-    /*if(token === null) {
+    if(token === null) {
         console.error('> Status code 401 - Token not available.');
         res.status(401).json(APIError.build('Token not available.')).send();
         return;
@@ -61,16 +76,24 @@ router.get('/validity', async (req, res) => {
         console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${query.user}.`);
         res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
         return;
-    }*/
-    console.log("PRIMA SERVICE VALIDITY");
+    }
 
-    const is_place_good = await recommendationService.getValidity(query)
-    let js = {"is_place_good":is_place_good}
+    const validationRequest = new ValidationRequest(
+        user,
+        parseFloat(query.latitude + ''),
+        parseFloat(query.longitude + ''),
+        query.human_activity + '',
+        parseInt(query.date_time + ''),
+        query.place_category + ''
+    );
 
-    // { is_place_good: '{"validate":true}\n' }
-    console.log("RITORNO VALIDITY SERVICE ", js);
+    const result = await recommendation.shouldAdvisePlaceCategory(validationRequest);
 
-    res.json(js).status(200).send();
+    if(result !== null) {
+        res.json(result).status(200).send();
+    } else {
+        res.status(400).send();
+    }
 });
 
 
@@ -88,11 +111,27 @@ router.post('/train', async (req, res) => {
         res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.sender}.`)).send();
         return;
     }
-    // await solo se vogliamo vedere il risultato nel server
 
-    const train_result = await recommendationService.testModel(body)
-    let js = {"train_result":train_result}
-    res.json(js).status(200).send();
+    const trainRequest = new ValidationRequest(
+        user,
+        body.latitude,
+        body.longitude,
+        body.human_activity,
+        body.date_time,
+        body.place_category
+    );
+
+    await recommendation.trainAgainModel(trainRequest).then(
+        (success) => {
+            console.info(success);
+            // TODO Push notification Firebase.
+        },
+        (error) => {
+            console.error(error);
+        }
+    );
+
+    res.status(200).send();
 });
 
 module.exports = router;

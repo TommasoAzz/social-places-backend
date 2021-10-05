@@ -24,6 +24,10 @@ Persistence.connection = firestore;
 const Authentication = require('./persistence/authentication');
 Authentication.connection = auth;
 
+// Context Aware Server
+const RecommendationService = require('./service/recommendation');
+RecommendationService.api_url = environment.contextAwareServerUrl;
+
 // HTTPS initialization
 const options = {
     key: fs.readFileSync(environment.certificateKey),
@@ -31,7 +35,6 @@ const options = {
 };
 
 // Routes configuration
-//const { friends, liveEvents, pointsOfInterest } = require('./controller');
 const { friends, liveEvents, pointsOfInterest, recommendation } = require('./controller');
 
 app.use(express.json());
