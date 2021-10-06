@@ -79,7 +79,11 @@ class RecommendationService {
      */
     static async trainAgainModel(recommendationRequest) {
         try{
-            const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
+            this._api_url =  "http://localhost:4000/recommendation/";
+            console.log(this._api_url)
+
+            //const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
+            const train_result = await superagent.post('http://localhost:4000/recommendation/train').send(recommendationRequest);
 
             const body = train_result.body;
 
