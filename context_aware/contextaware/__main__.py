@@ -69,7 +69,8 @@ def should_advise_place_category():
 
     # Prediction
     predicted_place_cat = classifier.predict(new_record)
-    return (place_category == predicted_place_cat), 200
+    result = place_category == predicted_place_cat
+    return result, 200
 
 
 @app.route("/recommendation/train", methods=["POST"])

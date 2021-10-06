@@ -27,7 +27,6 @@ Authentication.connection = auth;
 // Context Aware Server
 const RecommendationService = require('./service/recommendation');
 RecommendationService.api_url = environment.contextAwareServerUrl;
-
 // HTTPS initialization
 const options = {
     key: fs.readFileSync(environment.certificateKey),
