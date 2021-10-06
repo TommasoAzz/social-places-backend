@@ -51,7 +51,8 @@ router.get('/places', async (req, res) => {
         parseFloat(query.latitude + ''),
         parseFloat(query.longitude + ''),
         query.human_activity + '',
-        parseInt(query.date_time + '')
+        parseInt(query.seconds_in_day + ''),
+        parseInt(query.week_day + '')
     );
 
     const result = await recommendation.recommendPlaceCategory(recommendationRequest);
@@ -83,7 +84,8 @@ router.get('/validity', async (req, res) => {
         parseFloat(query.latitude + ''),
         parseFloat(query.longitude + ''),
         query.human_activity + '',
-        parseInt(query.date_time + ''),
+        parseInt(query.seconds_in_day + ''),
+        parseInt(query.week_day + ''),
         query.place_category + ''
     );
 
@@ -117,7 +119,8 @@ router.post('/train', async (req, res) => {
         body.latitude,
         body.longitude,
         body.human_activity,
-        body.date_time,
+        parseInt(body.seconds_in_day + ''),
+        parseInt(body.week_day + ''),
         body.place_category
     );
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from contextaware.classifier.classifier import ActivityClassifier
 from flask import Flask, request
-from datetime import datetime
 import pandas as pd
 
 app = Flask(__name__)
@@ -13,11 +12,8 @@ def create_record(req: request) -> pd.DataFrame:
     latitude = req.args.get('latitude')
     longitude = req.args.get('longitude')
     human_activity = req.args.get('human_activity')
-    date_time = req.args.get('date_time')
-    date_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S%z')
-    seconds = (date_time.hour * 3600) + (date_time.minute * 60) + date_time.second
-    # 0 = Monday, 6 = Sunday
-    day_of_week = date_time.weekday()
+    seconds_in_day = req.args.get('seconds_in_day')
+    week_day = req.args.get('week_day')
     
     # New record creation
     new_record = pd.DataFrame(columns=[
@@ -31,7 +27,7 @@ def create_record(req: request) -> pd.DataFrame:
     har_still = "still" == human_activity
     har_walk = "walk" == human_activity
 
-    new_record.loc[0] = [latitude, longitude, seconds, day_of_week, har_bike, har_bus, har_car, har_still, har_walk]
+    new_record.loc[0] = [latitude, longitude, seconds_in_day, week_day, har_bike, har_bus, har_car, har_still, har_walk]
     return new_record
     
 
@@ -86,22 +82,16 @@ def train_again_model():
     latitude = request.args.get('latitude')
     longitude = request.args.get('longitude')
     human_activity = request.args.get('human_activity')
-    date_time = request.args.get('date_time')  # TODO convert to millisecs
+    seconds_in_day = request.args.get('seconds_in_day')
+    week_day = request.args.get('week_day')
     place_category = request.args.get('place_category')
-
-    # Arguments preprocessing
-    #REPLACE '+' WITH %2b before the req
-    date_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S%z')
-    seconds = (date_time.hour * 3600) + (date_time.minute * 60) + date_time.second
-    # 0 = Monday, 6 = Sunday
-    day_of_week = date_time.weekday()
     
     # New record creation
     new_record = pd.DataFrame(columns=[
         'place_lat', 'place_lon','place_category', 'time_of_day', 'day_of_week', 'human_activity'
         ])
 
-    new_record.loc[0] = [latitude, longitude, place_category,seconds, day_of_week, human_activity]
+    new_record.loc[0] = [latitude, longitude, place_category, seconds_in_day, week_day, human_activity]
 
     classifier.update_retrain(new_record)
 
