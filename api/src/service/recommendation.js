@@ -29,9 +29,9 @@ class RecommendationService {
         try{
             const validity_result = await superagent.get(this._api_url + 'validity').query(validationRequest);
 
-            const body = validity_result.body;
+            const text = validity_result.text;
 
-            return body;
+            return parseInt(text) === 1;
         } catch(error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 
@@ -79,11 +79,7 @@ class RecommendationService {
      */
     static async trainAgainModel(recommendationRequest) {
         try{
-            this._api_url =  "http://localhost:4000/recommendation/";
-            console.log(this._api_url)
-
-            //const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
-            const train_result = await superagent.post('http://localhost:4000/recommendation/train').send(recommendationRequest);
+            const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
 
             const body = train_result.body;
 
