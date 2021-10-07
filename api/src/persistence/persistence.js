@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 const FirebaseFirestore = require('firebase-admin').firestore;
+const FirebaseCloudMessaging = require('firebase-admin').messaging();
 const Friend = require('../model/friend');
 const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
@@ -207,7 +208,24 @@ class Persistence {
             friend: receiverOfTheFriendshipRequest
         });
 
-        console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}.`);
+        const senderDoc = await this._connection.collection(this._usersDoc).doc(senderOfTheFriendshipRequest).get();
+
+        /**
+         * @type {string}
+         */
+        const pushToken = senderDoc.data().notificationToken;
+
+        const message = {
+            notification: {
+                title: 'Frienship request confirmed',
+                body: `You and ${receiverOfTheFriendshipRequest} are now friends!`
+            },
+            token: pushToken
+        };
+
+        const messageId = await FirebaseCloudMessaging.send(message);
+
+        console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}. Sent notification, identifier: ${messageId}.`);
     }
 
     /**
