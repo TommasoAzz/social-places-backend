@@ -108,9 +108,9 @@ router.post('/train', async (req, res) => {
         return;
     }
     let user = await auth.verifyToken(token);
-    if(user === null || user != body.sender) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.sender}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.sender}.`)).send();
+    if(user === null || user != body.user) {
+        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
+        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
         return;
     }
 
