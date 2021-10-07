@@ -371,6 +371,20 @@ class Persistence {
 
         console.info(`Confirmed point of interest with id=${poiId} removal from ${username}.`);
     }
+
+    /**
+     * Updates the notification token for user `username`.
+     * 
+     * @param {string} username username of the user of which the token should be saved.
+     * @param {string} token The Firebase Cloud Messaging notification token.
+     */
+    static async updatePushNotificationToken(username, token) {
+        await this.createUserIfNotExistent(username);
+
+        const writeTime = await this._connection.collection(this._usersDoc).doc(username).set({notificationToken: token});
+
+        console.info(`Confirmed writing of notification token for user ${username} at ${writeTime.writeTime.toDate().toLocaleDateString()}.`);
+    }
 }
 
 module.exports = Persistence;

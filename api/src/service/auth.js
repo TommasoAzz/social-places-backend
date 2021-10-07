@@ -1,5 +1,6 @@
 // @ts-nocheck
 const Authentication = require('../persistence/authentication');
+const Persistence = require('../persistence/persistence');
 
 class AuthService {
     /**
@@ -27,6 +28,16 @@ class AuthService {
         }
 
         return null;
+    }
+
+    /**
+     * Updates the notification token for user `username`.
+     * 
+     * @param {string} username username of the user of which the token should be saved.
+     * @param {string} token The notification token.
+     */
+    static async updatePushNotificationToken(username, token) {
+        await Persistence.updatePushNotificationToken(username, token);
     }
 }
 
