@@ -22,7 +22,7 @@ router.get('/accuracy', async (req, res) => {
         return;
     }
 
-    const result = await recommendation.computeModelAccuracy();
+    const result = await recommendation.computeModelAccuracy(user);
 
     if(result !== null) {
         res.json(result).status(200).send();

@@ -91,6 +91,12 @@ class Persistence {
         }
     }
 
+    static async checkUser(user) {
+        const userDoc = await this._connection.collection(`${this._usersDoc}`).doc(user).get();
+        if(!userDoc.exists) 
+            console.error(`Throw error for user ${user}, does not exist.`);
+    }
+
     /**
      * Retrieves all user records available on Firestore.
      *
@@ -118,7 +124,7 @@ class Persistence {
      * @returns instance of `User` with the collected data.
      */
     static async getUser(userId) {
-        await this.createUserIfNotExistent(userId);
+        await this.checkUser(userId);
 
         const friends = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendsDoc}`).get();
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._liveEventsDoc}`).get();
@@ -144,7 +150,7 @@ class Persistence {
      * @returns The id of the request.
      */
     static async addFriendRequest(sender, receiver) {
-        await this.createUserIfNotExistent(receiver);
+        await this.checkUser(sender);
 
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).add({
             origin: sender
@@ -163,7 +169,7 @@ class Persistence {
      * @param {string} receiver Receiver of the friendship request.
      */
     static async removeFriendRequest(sender, receiver) {
-        await this.createUserIfNotExistent(receiver);
+        await this.checkUser(receiver);
 
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).where('origin', '==', sender).get();
         if(friendRequestReference.empty) {
@@ -184,7 +190,7 @@ class Persistence {
      * @param {string} friendToAdd new friend to add.
      */
     static async addFriend(user, friendToAdd) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         const addedFriend = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).add({
             friend: friendToAdd
@@ -202,7 +208,7 @@ class Persistence {
      * @param {string} receiverOfTheFriendshipRequest User that confirmed the friendship request.
      */
     static async notifyAddedFriend(senderOfTheFriendshipRequest, receiverOfTheFriendshipRequest) {
-        await this.createUserIfNotExistent(senderOfTheFriendshipRequest);
+        await this.checkUser(senderOfTheFriendshipRequest);
 
         const friendshipConfirmationReference = await this._connection.collection(`${this._usersDoc}/${senderOfTheFriendshipRequest}/${this._notifyFriendshipConfirmationDoc}`).add({
             friend: receiverOfTheFriendshipRequest
@@ -214,19 +220,39 @@ class Persistence {
          * @type {string}
          */
         const pushToken = senderDoc.data().notificationToken;
-
-        const message = {
-            notification: {
-                title: 'Frienship request confirmed',
-                body: `You and ${receiverOfTheFriendshipRequest} are now friends!`
-            },
-            token: pushToken
-        };
-
-        const messageId = await FirebaseCloudMessaging.send(message);
+        const title = 'Frienship request confirmed';
+        const body = `You and ${receiverOfTheFriendshipRequest} are now friends!`;
+        
+        const messageId = createAndSendNotification(pushToken,title,body)
 
         console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}. Sent notification, identifier: ${messageId}.`);
     }
+
+
+    /**
+     * Triggers a friendship request notification for user `receiverOfTheFriendshipRequest`.
+     * 
+     * @param {string} senderOfTheFriendshipRequest User that sended friend request.
+     * @param {string} receiverOfTheFriendshipRequest User that will receive the notification of friendship request.
+     */
+     static async notifyFriendRequest(senderOfTheFriendshipRequest, receiverOfTheFriendshipRequest) {
+        await this.checkUser(receiverOfTheFriendshipRequest);
+
+        const receiverDoc = await this._connection.collection(this._usersDoc).doc(senderOfTheFriendshipRequest).get();
+
+        /**
+         * @type {string}
+         */
+        const pushToken = receiverDoc.data().notificationToken;
+        const title = 'New Friend Request';
+        const body = `${receiverOfTheFriendshipRequest} sends you a friend request!`;
+        
+        const messageId = createAndSendNotification(pushToken,title,body)
+               
+
+        console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Sent notification, identifier: ${messageId}.`);
+    }
+
 
     /**
      * Removes `friendToRemove` from the list of friends of `user`.
@@ -235,7 +261,7 @@ class Persistence {
      * @param {string} friendToRemove friend to remove.
      */
     static async removeFriend(user, friendToRemove) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         const friendsOfUser = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).where('friend', '==', friendToRemove).get();
         if(friendsOfUser.empty) {
@@ -261,7 +287,7 @@ class Persistence {
      * @returns the live event id if added, `null` if the user or their friends have already a live event in their list with the same name or address.
      */
     static async addLiveEvent(liveEvent) {
-        await this.createUserIfNotExistent(liveEvent.owner);
+        await this.checkUser(liveEvent.owner);
 
         // Checking for live events with same name or address.
         const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
@@ -290,6 +316,89 @@ class Persistence {
 
         return personalLiveEventReference.id;
     }
+    /**
+     * Create notification for new live event for everu friend of liveEvent.owner
+     * 
+     * @param {LiveEvent} liveEvent Live event data.
+     */
+     static async notifyAddLiveEvent(liveEvent) {
+        await this.checkUser(liveEvent.owner);
+
+        const friends = await this.getFriends(liveEvent.owner);
+
+        friends.forEach(async (friend) => {
+            var friendDoc = await this._connection.collection(this._usersDoc).doc(friend.username).get();
+
+            const pushToken = friendDoc.data().notificationToken;
+            const title = `New Live POI!`;
+            const body = `${receiverOfTheFriendshipRequest} added new Live POI!`;
+            
+            const messageId = createAndSendNotification(pushToken,title,body)
+            console.info(`Notified user ${friend.username} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
+
+        });
+     }
+
+     /**
+      * 
+      * @param {placeValidated} placeValidated contains all information of the place validated to be notified
+      * @returns 
+      */
+     static async notifyValidPlace(placeValidated){
+        await this.checkUser(placeValidated.user);
+
+        const userDoc = await this._connection.collection(this._usersDoc).doc(placeValidated.user).get();
+
+        const pushToken = userDoc.data().notificationToken;
+        const title = `Suggestion!`;
+        const body = `You may be interested to this ${placeValidated.place_category}. You are near this point`;
+        
+        const messageId = createAndSendNotification(pushToken,title,body)
+        console.info(`Notified user ${placeValidated.user} because ${placeValidated.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
+
+     }
+
+    /**
+      * 
+      * @param {recommendedPlace} recommendedPlace contains place_category to be notified
+      * @param {user} user user that made the request
+
+      * @returns 
+      */
+     static async notifyTypePlace(recommendedPlace,user){
+        await this.checkUser(user);
+        var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
+
+        const pushToken = userDoc.data().notificationToken;
+        const title = `Suggestion!`;
+        const body = `You may be interested to this category ${recommendedPlace.place_category}`;
+        
+        const messageId = createAndSendNotification(pushToken,title,body)
+        console.info(`Notified user ${user} because ${recommendedPlace.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
+
+     }
+
+     /**
+      * 
+      * @param {recommendationAccuracy} recommendationAccuracy contains accuracy and correct sample number
+      * @param {user} user user that made the request
+      * @returns 
+      */
+      static async notifyRetrainedModel(recommendationAccuracy,user){
+        await this.checkUser(user);
+        var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
+        const pushToken = userDoc.data().notificationToken;
+        
+        const title = `Model retrained!`;
+        const body = `Thanks for improving our model, new accuray: ${recommendationAccuracy.accuracy}`;
+        
+        const messageId = createAndSendNotification(pushToken,title,body)
+        console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
+
+     }
+
+     
+
 
     /**
      * Returns the list of friends of `user`.
@@ -298,7 +407,7 @@ class Persistence {
      * @returns A list of `Friend` instances.
      */
     static async getFriends(user) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         const friends = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).get();
         
@@ -312,7 +421,7 @@ class Persistence {
      * @returns A list of `LiveEvent`.
      */
     static async getLiveEventsFromFriends(user) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._liveEventsDoc}`).get();
 
@@ -326,7 +435,7 @@ class Persistence {
      * @returns A list of `LiveEvent`.
      */
     static async getPersonalLiveEvents(user) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalLiveEventsDoc}`).get();
 
@@ -340,7 +449,7 @@ class Persistence {
      * @returns An `Array<PointOfInterest>` of point of interests.
      */
     static async getPOIsOfUser(username) {
-        await this.createUserIfNotExistent(username);
+        await this.checkUser(username);
 
         const pois = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).get();
         
@@ -355,7 +464,7 @@ class Persistence {
      * @returns the point of interest's id if added, `null` if the user has already a point of interest in their list with the same name or address.
      */
     static async addPointOfInterest(user, poi) {
-        await this.createUserIfNotExistent(user);
+        await this.checkUser(user);
 
         // Checking for points of interest with same name or address.
         const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${user}/${this._poisDoc}`).where('name', '==', poi.name).get();
@@ -378,7 +487,7 @@ class Persistence {
      * @param {string} username username of the user in which the point of interest should be found.
      */
     static async removePointOfInterest(poiId, username) {
-        await this.createUserIfNotExistent(username);
+        await this.checkUser(username);
 
         const poi = await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).doc(poiId).get();
         if(!poi.exists) {
@@ -481,3 +590,19 @@ function friendRequestFromFirestore(document, _, __) {
 
     return new FriendRequest(document.data().origin);
 }
+
+
+async function createAndSendNotification(pushToken, title, body){
+
+    const message = {
+        notification: {
+            title: title,
+            body: body
+        },
+        token: pushToken
+    };
+
+    const messageId = await FirebaseCloudMessaging.send(message);
+    return messageId
+}
+

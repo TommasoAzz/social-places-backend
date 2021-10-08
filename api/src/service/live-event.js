@@ -36,7 +36,7 @@ class LiveEventService {
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);
         
         const opResult = await Persistence.addLiveEvent(liveEventToAdd);
-
+        await Persistence.notifyAddLiveEvent(liveEventToAdd);
         return opResult != null;
     }
 }

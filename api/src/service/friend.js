@@ -39,6 +39,7 @@ class FriendService {
         if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0) {
             // No friendship with the receiver user therefore a friend request can be sent.
             await Persistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
+            await Persistence.notifyFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
         }
     }
 

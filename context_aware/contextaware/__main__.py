@@ -70,7 +70,7 @@ def should_advise_place_category():
     # Prediction
     predicted_place_cat = classifier.predict(new_record)
 
-    result = str(int(place_category == predicted_place_cat))
+    result = {"result":int(place_category == predicted_place_cat)}
     return result, 200
 
 
