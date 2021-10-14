@@ -223,7 +223,7 @@ class Persistence {
         const title = 'Frienship request confirmed';
         const body = `You and ${receiverOfTheFriendshipRequest} are now friends!`;
         
-        const messageId = createAndSendNotification(pushToken,title,body)
+        const messageId = await createAndSendNotification(pushToken,title,body)
 
         console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}. Sent notification, identifier: ${messageId}.`);
     }
@@ -247,7 +247,7 @@ class Persistence {
         const title = 'New Friend Request';
         const body = `${receiverOfTheFriendshipRequest} sends you a friend request!`;
         
-        const messageId = createAndSendNotification(pushToken,title,body)
+        const messageId = await createAndSendNotification(pushToken,title,body)
                
 
         console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Sent notification, identifier: ${messageId}.`);
@@ -327,13 +327,13 @@ class Persistence {
         const friends = await this.getFriends(liveEvent.owner);
 
         friends.forEach(async (friend) => {
-            var friendDoc = await this._connection.collection(this._usersDoc).doc(friend.username).get();
+            var friendDoc = await this._connection.collection(this._usersDoc).doc(friend.friendUsername).get();
 
             const pushToken = friendDoc.data().notificationToken;
             const title = `New Live POI!`;
-            const body = `${receiverOfTheFriendshipRequest} added new Live POI!`;
+            const body = `${liveEvent.owner} added new Live POI!`;
             
-            const messageId = createAndSendNotification(pushToken,title,body)
+            const messageId = await createAndSendNotification(pushToken,title,body)
             console.info(`Notified user ${friend.username} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
 
         });
@@ -353,7 +353,7 @@ class Persistence {
         const title = `Suggestion!`;
         const body = `You may be interested to this ${placeValidated.place_category}. You are near this point`;
         
-        const messageId = createAndSendNotification(pushToken,title,body)
+        const messageId = await createAndSendNotification(pushToken,title,body)
         console.info(`Notified user ${placeValidated.user} because ${placeValidated.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
      }
@@ -373,7 +373,7 @@ class Persistence {
         const title = `Suggestion!`;
         const body = `You may be interested to this category ${recommendedPlace.place_category}`;
         
-        const messageId = createAndSendNotification(pushToken,title,body)
+        const messageId = await createAndSendNotification(pushToken,title,body)
         console.info(`Notified user ${user} because ${recommendedPlace.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
      }
@@ -392,7 +392,7 @@ class Persistence {
         const title = `Model retrained!`;
         const body = `Thanks for improving our model, new accuray: ${recommendationAccuracy.accuracy}`;
         
-        const messageId = createAndSendNotification(pushToken,title,body)
+        const messageId = await createAndSendNotification(pushToken,title,body)
         console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
 
      }
