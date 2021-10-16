@@ -25,7 +25,7 @@ class LiveEventService {
      * Publishes a new live event.
      * 
      * @param {AddLiveEvent} liveEvent the new live event.
-     * @returns `true` if the live event was added, `false` otherwise.
+     * @returns the live event id.
      */
     static async addLiveEvent(liveEvent)  {
         if(!(liveEvent instanceof AddLiveEvent)) {
@@ -35,9 +35,9 @@ class LiveEventService {
 
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);
         
-        const opResult = await Persistence.addLiveEvent(liveEventToAdd);
+        const leId = await Persistence.addLiveEvent(liveEventToAdd);
         await Persistence.notifyAddLiveEvent(liveEventToAdd);
-        return opResult != null;
+        return leId;
     }
 }
 

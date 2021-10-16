@@ -43,9 +43,17 @@ router.post('/add', async (req, res) => {
 
     let addLiveEvent = new AddLiveEvent(body.expiresAfter, body.owner, body.name, body.address, body.latitude, body.longitude);
 
-    const wasAdded = await liveEvent.addLiveEvent(addLiveEvent);
+    const leId = await liveEvent.addLiveEvent(addLiveEvent);
 
-    res.status(wasAdded ? 200 : 400).send();
+    if(leId === null) {
+        res.json(
+            APIError.build(
+                'Trying to add a live event with a name or address already existent in the user\'s list of live events.'
+            )
+        ).status(400).send();
+    } else {            
+        res.json(leId).status(200).send();
+    }
 });
 
 module.exports = router;
