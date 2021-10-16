@@ -7,7 +7,7 @@ const LiveEvent = require('../model/live-event');
 const PointOfInterest = require('../model/point-of-interest');
 const FriendRequest = require('../model/friend-request');
 const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
-
+const ValidationRequest = require('../model/request-body/validation-request');
 class Persistence {
     /**
      * @type {FirebaseFirestore.Firestore}
@@ -334,14 +334,14 @@ class Persistence {
             const body = `${liveEvent.owner} added new Live POI!`;
             
             const messageId = await createAndSendNotification(pushToken,title,body)
-            console.info(`Notified user ${friend.username} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
+            console.info(`Notified user ${friend.friendUsername} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
 
         });
      }
 
      /**
       * 
-      * @param {placeValidated} placeValidated contains all information of the place validated to be notified
+      * @param {ValidationRequest} placeValidated contains all information of the place validated to be notified
       * @returns 
       */
      static async notifyValidPlace(placeValidated){
