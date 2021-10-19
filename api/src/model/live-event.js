@@ -11,7 +11,7 @@ class LiveEvent {
      * @param {number} longitude Longitude of the place.
      * @param {string} name A descriptive name for the event.
      * @param {string} owner Username of the user that created the event.
-     * @param {number} expirationDate Expiration date in ms
+     * @param {number} expirationDate Expiration date in seconds
      */
     constructor(id, address, latitude, longitude, name, owner, expirationDate) {
         if(!(typeof(id) === 'string')) {
@@ -60,8 +60,8 @@ class LiveEvent {
      * @returns an instance of this class.
      */
     static fromLiveEvent(addLiveEvent) {
-        const currentDate = Date.now(); // It's in ms.
-        const expiresAfter = addLiveEvent.expiresAfter * 60 * 1000; // addLiveEvent.expiresAfter is in minutes (that's why "* 60 * 1000")
+        const currentDate = Math.floor(Date.now() / 1000); // It's in seconds.
+        const expiresAfter = addLiveEvent.expiresAfter; // addLiveEvent.expiresAfter is in seconds
         return new LiveEvent(
             '',
             addLiveEvent.address,

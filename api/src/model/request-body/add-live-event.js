@@ -2,7 +2,7 @@ class AddLiveEvent {
     /**
      * Constructs a live event creation request body.
      * 
-     * @param {number} expiresAfter Minutes after which the event expires.
+     * @param {number} expiresAfter Seconds after which the event expires.
      * @param {string} owner Username of the person which adds the event to the system.
      * @param {string} name Name of the event.
      * @param {string} address Address in which the event takes place.
