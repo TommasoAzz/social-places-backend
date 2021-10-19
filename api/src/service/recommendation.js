@@ -1,3 +1,4 @@
+// @ts-nocheck
 const superagent = require('superagent');
 // eslint-disable-next-line no-unused-vars
 const ValidationRequest = require('../model/request-body/validation-request');
@@ -12,7 +13,7 @@ class RecommendationService {
      * @type {string}
      */
     static _api_url;
-    
+
     /**
      * Sets the URL for the Context Aware REST APIs.
      * @param {string} apiUrl 
@@ -22,38 +23,47 @@ class RecommendationService {
     }
 
     /**
-     * 
-     * @param {ValidationRequest} validationRequest 
-     * @returns 
+     * Checks whether `validationRequest` is correct.
+     * @param {ValidationRequest} validationRequest the request for validation.
+     * @returns {Promise<boolean>} `true` if the suggested category for the place is valid, `false` if not valid, `null` otherwise.
      */
     static async shouldAdvisePlaceCategory(validationRequest) {
-        try{
+        try {
             const validity_result = await superagent.get(this._api_url + 'validity').query(validationRequest);
-
-            const isPlaceValid = validity_result.body.result;
-            console.log("RESULT VALIDITY ", validity_result.body)
-            if(isPlaceValid)
-               await Persistence.notifyValidPlace(validationRequest)
             
-            return isPlaceValid;
-        } catch(error) {
+            /**
+             * @type number
+             */
+            const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
+            
+            if (isPlaceValid === 1) {
+                await Persistence.notifyValidPlace(validationRequest);
+            }
+
+            return isPlaceValid === 1;
+        } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 
             return null;
         }
     }
-    
+
+    /**
+     * Given data from {query} returns the recommended place category.
+     * @param {*} query (latitude, longitude, human_activity, seconds_in_day, week_day)
+     * @returns {Promise<RecommendedPlace>} the recommended place category if data is correct, `null` otherwise.
+     */
     static async recommendPlaceCategory(query) {
-        try{
+        try {
             const places_result = await superagent.get(this._api_url + 'places').query(query);
 
             const body = places_result.body;
             const recommendedPlace = new RecommendedPlace(body.place_category);
-            console.log("USER FROM PLACE ",query.user)
-            await Persistence.notifyTypePlace(recommendedPlace,query.user)
-            
+
+            await Persistence.notifyTypePlace(recommendedPlace, query.user);
+
             return recommendedPlace;
-        } catch(error) {
+        } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 
             return null;
@@ -63,19 +73,20 @@ class RecommendationService {
     /**
      * Asks for the current model accuracy.
      * 
-     * @returns a `RecommendationAccuracy` instance.
+     * @param {string} user to be notified
+     * @returns {Promise<RecommendationAccuracy>}the new accuracy of the model.
      */
     static async computeModelAccuracy(user) {
-        try{
+        try {
             const accuracy_result = await superagent.get(this._api_url + 'accuracy');
 
             const body = accuracy_result.body;
             const recommendationAccuracy = new RecommendationAccuracy(body.accuracy, body.correct_samples);
 
-            await Persistence.notifyRetrainedModel(recommendationAccuracy,user)
+            await Persistence.notifyRetrainedModel(recommendationAccuracy, user);
 
             return recommendationAccuracy;
-        } catch(error) {
+        } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 
             return null;
@@ -83,26 +94,26 @@ class RecommendationService {
     }
 
     /**
-     * 
-     * @param {RecommendationRequest} recommendationRequest 
-     * @returns 
+     * Asks for the current model to be trained again with the new given record `recommendationRequest`.
+     * @param {RecommendationRequest} recommendationRequest the new data for the model to be trained.
+     * @returns {Promise<RecommendationAccuracy>} the new accuracy of the model.
      */
     static async trainAgainModel(recommendationRequest) {
-        try{
+        try {
             const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
 
             const body = train_result.body;
 
             const recommendationAccuracy = new RecommendationAccuracy(body.accuracy, body.correct_samples);
 
-            await Persistence.notifyRetrainedModel(recommendationAccuracy,user)
+            await Persistence.notifyRetrainedModel(recommendationAccuracy, recommendationRequest.user);
 
             return recommendationAccuracy;
-        } catch(error) {
+        } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 
             return null;
-        }   
+        }
     }
 }
 

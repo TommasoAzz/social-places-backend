@@ -124,15 +124,7 @@ router.post('/train', async (req, res) => {
         body.place_category
     );
 
-    await recommendation.trainAgainModel(trainRequest).then(
-        (success) => {
-            console.info(success);
-            // TODO Push notification Firebase.
-        },
-        (error) => {
-            console.error(error);
-        }
-    );
+    await recommendation.trainAgainModel(trainRequest).then(console.info, console.error);
 
     res.status(200).send();
 });
