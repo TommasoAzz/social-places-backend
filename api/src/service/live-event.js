@@ -16,10 +16,10 @@ class LiveEventService {
             throw TypeError(`Argument ${user} is not a string`);
         }
         
-        
+        const currentSeconds = Math.floor(Date.now() / 1000);
         return (await Persistence.getPersonalLiveEvents(user)).concat(
             await Persistence.getLiveEventsFromFriends(user)
-        ).filter((liveEvent) => liveEvent.expirationDate > Date.now());
+        ).filter((liveEvent) => liveEvent.expirationDate > currentSeconds);
     }
     /**
      * Publishes a new live event.
