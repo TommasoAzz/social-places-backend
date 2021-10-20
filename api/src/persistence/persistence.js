@@ -231,7 +231,7 @@ class Persistence {
         const title = 'Frienship request confirmed';
         const body = `You and ${receiverOfTheFriendshipRequest} are now friends!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body);
+        const messageId = await createAndSendNotification(pushToken, title, body, 'friend-request-accepted');
 
         console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}. Sent notification, identifier: ${messageId}.`);
     }
@@ -255,7 +255,7 @@ class Persistence {
         const title = 'New Friend Request';
         const body = `${receiverOfTheFriendshipRequest} sends you a friend request!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body);
+        const messageId = await createAndSendNotification(pushToken, title, body, 'new-friend-request');
 
 
         console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Sent notification, identifier: ${messageId}.`);
@@ -341,7 +341,7 @@ class Persistence {
             const title = 'New Live POI!';
             const body = `${liveEvent.owner} added new Live POI!`;
 
-            const messageId = await createAndSendNotification(pushToken, title, body);
+            const messageId = await createAndSendNotification(pushToken, title, body, 'new-live-event');
             console.info(`Notified user ${friend.friendUsername} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
 
         });
@@ -361,7 +361,7 @@ class Persistence {
         const title = 'Suggestion!';
         const body = `You may be interested to this ${placeValidated.place_category}. You are near this point`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body);
+        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
         console.info(`Notified user ${placeValidated.user} because ${placeValidated.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -381,7 +381,7 @@ class Persistence {
         const title = 'Suggestion!';
         const body = `You may be interested to this category ${recommendedPlace.place_category}`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body);
+        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
         console.info(`Notified user ${user} because ${recommendedPlace.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -400,7 +400,7 @@ class Persistence {
         const title = 'Model retrained!';
         const body = `Thanks for improving our model, new accuray: ${recommendationAccuracy.accuracy}`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body);
+        const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained');
         console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -599,16 +599,24 @@ function friendRequestFromFirestore(document, _, __) {
     return new FriendRequest(document.data().origin);
 }
 
-
-async function createAndSendNotification(pushToken, title, body) {
-
+/**
+ * 
+ * @param {string} pushToken 
+ * @param {string} title 
+ * @param {string} body 
+ * @param {string} clickAction 
+ * @returns 
+ */
+async function createAndSendNotification(pushToken, title, body, clickAction) {
     const message = {
         notification: {
             title: title,
-            body: body
+            body: body,
+            click_action: clickAction
         },
         token: pushToken
     };
+
     try {
         const messageId = await FirebaseCloudMessaging.send(message);
         return messageId;
