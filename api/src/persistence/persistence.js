@@ -301,6 +301,7 @@ class Persistence {
         const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
         const personalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('address', '==', liveEvent.address).get();
         if (!personalDuplicatedName.empty || !personalDuplicatedAddr.empty) {
+            console.log('1');
             return null;
         }
 
@@ -312,6 +313,7 @@ class Persistence {
             found = !friendDuplicatedName.empty || !friendDuplicatedAddr.empty;
         }
         if (found) {
+            console.log('2');
             return null;
         }
 

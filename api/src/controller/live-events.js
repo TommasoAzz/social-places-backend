@@ -45,6 +45,8 @@ router.post('/add', async (req, res) => {
 
     const leId = await liveEvent.addLiveEvent(addLiveEvent);
 
+    console.log(leId);
+
     if(leId === null) {
         res.json(
             APIError.build(

@@ -36,6 +36,9 @@ class LiveEventService {
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);
         
         const leId = await Persistence.addLiveEvent(liveEventToAdd);
+
+        console.log(leId);
+        
         if(leId !== null) {
             await Persistence.notifyAddLiveEvent(liveEventToAdd);
         }
