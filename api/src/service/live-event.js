@@ -40,6 +40,7 @@ class LiveEventService {
         console.log(leId);
         
         if(leId !== null) {
+            console.log('notifying');
             await Persistence.notifyAddLiveEvent(liveEventToAdd);
         }
         return leId;
