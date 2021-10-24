@@ -52,7 +52,7 @@ router.post('/add', async (req, res) => {
             )
         ).status(400).send();
     } else {            
-        res.json(leId).status(200).send();
+        res.json({id: leId}).status(200).send();
     }
 });
 
