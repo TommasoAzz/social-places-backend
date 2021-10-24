@@ -308,9 +308,11 @@ class Persistence {
         const friends = await this.getFriends(liveEvent.owner);
         let found = false;
         for (let i = 0, len = friends.length; i < len && !found; i++) {
-            const friendDuplicatedName = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('name', '==', liveEvent.name).get();
-            const friendDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('address', '==', liveEvent.address).get();
-            found = !friendDuplicatedName.empty || !friendDuplicatedAddr.empty;
+            const friendPersonalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
+            const friendPersonalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._personalLiveEventsDoc}`).where('address', '==', liveEvent.address).get();
+            const friendOtherDuplicatedName = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('name', '==', liveEvent.name).get();
+            const friendOtherDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${friends[i].friendUsername}/${this._liveEventsDoc}`).where('address', '==', liveEvent.address).get();
+            found = !friendPersonalDuplicatedName.empty || !friendPersonalDuplicatedAddr.empty || !friendOtherDuplicatedName.empty || !friendOtherDuplicatedAddr.empty;
         }
         if (found) {
             console.log('2');
