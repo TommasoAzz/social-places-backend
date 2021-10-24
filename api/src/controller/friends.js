@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
         return;
     }
 
-    res.json(await friendService.getFriends(user)).status(200).send();
+    res.status(200).json(await friendService.getFriends(user)).send();
 });
 
 router.post('/add', async (req, res) => {

@@ -25,7 +25,7 @@ router.get('/accuracy', async (req, res) => {
     const result = await recommendation.computeModelAccuracy(user);
 
     if(result !== null) {
-        res.json(result).status(200).send();
+        res.status(200).json(result).send();
     } else {
         res.status(400).send();
     }
@@ -58,7 +58,7 @@ router.get('/places', async (req, res) => {
     const result = await recommendation.recommendPlaceCategory(recommendationRequest);
 
     if(result !== null) {
-        res.json(result).status(200).send();
+        res.status(200).json(result).send();
     } else {
         res.status(400).send();
     }
@@ -92,7 +92,7 @@ router.get('/validity', async (req, res) => {
     const result = await recommendation.shouldAdvisePlaceCategory(validationRequest);
 
     if(result !== null) {
-        res.json(result).status(200).send();
+        res.status(200).json(result).send();
     } else {
         res.status(400).send();
     }

@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 
     const usersLiveEvents = await liveEvent.getLiveEvents(user);
     
-    res.json(usersLiveEvents).status(200).send();
+    res.status(200).json(usersLiveEvents).send();
 });
 
 router.post('/add', async (req, res) => {
@@ -46,15 +46,22 @@ router.post('/add', async (req, res) => {
     const leId = await liveEvent.addLiveEvent(addLiveEvent);
 
     console.log(leId);
-
+    var response = {}
     if(leId === null) {
-        res.json(
-            APIError.build(
-                'Trying to add a live event with a name or address already existent in the user\'s list of live events.'
-            )
-        ).status(400).send();
-    } else {            
-        res.json({id: leId}).status(200).send();
+        console.info("NULLLL")
+        response = APIError.build(
+            'Trying to add a live event with a name or address already existent in the user\'s list of live events.'
+        )
+        console.info(response)
+
+        res.status(400).json(
+            response
+        ).send();
+    } else {    
+        console.info("non NULLLL")
+        response = {"id": leId}
+        console.log(response)
+        res.status(200).json(response).send();
     }
 });
 

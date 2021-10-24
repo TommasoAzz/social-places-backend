@@ -69,13 +69,13 @@ router.post('/add', async (req, res) => {
     const poiId = await pointOfInterest.addPointOfInterest(addPointOfInterest.user, addPointOfInterest.poi);
 
     if(poiId === null) {
-        res.json(
+        res.status(400).json(
             APIError.build(
                 'Trying to add a point of interest with a name or address already existent in the user\'s list of points of interest.'
             )
-        ).status(400).send();
+        ).send();
     } else {            
-        res.json({markId: poiId}).status(200).send();
+        res.status(200).json({"markId": poiId}).send();
     }
 });
 
