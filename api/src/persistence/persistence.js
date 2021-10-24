@@ -300,7 +300,7 @@ class Persistence {
         // Checking for live events with same name or address.
         const personalDuplicatedName = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('name', '==', liveEvent.name).get();
         const personalDuplicatedAddr = await this._connection.collection(`${this._usersDoc}/${liveEvent.owner}/${this._personalLiveEventsDoc}`).where('address', '==', liveEvent.address).get();
-        if (!personalDuplicatedName.empty && !personalDuplicatedAddr.empty) {
+        if (!personalDuplicatedName.empty || !personalDuplicatedAddr.empty) {
             return null;
         }
 
