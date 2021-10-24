@@ -4,6 +4,7 @@ const AddFriendshipConfirmation = require('../model/request-body/add-friendship-
 const RemoveFriendshipRequest = require('../model/request-body/remove-friendship-request');
 
 const Persistence = require('../persistence/persistence');
+const AddFriendshipDenial = require('../model/request-body/add-friendship-denial');
 
 class FriendService {
     /**
@@ -85,6 +86,23 @@ class FriendService {
 
         await Persistence.removeFriend(friendshipRemoval.sender, friendshipRemoval.receiver);
         await Persistence.removeFriend(friendshipRemoval.receiver, friendshipRemoval.sender);
+    }
+
+    /**
+     * Deny friendship request
+     * 
+     * @param {AddFriendshipDenial} friendshipDenial
+     */
+     static async sendAddFriendshipDenial(friendshipDenial) {
+        if(!(friendshipDenial instanceof AddFriendshipDenial)) {
+            console.error(`Argument ${friendshipDenial} is not of type AddFriendshipDenial`);
+            throw TypeError(`Argument ${friendshipDenial} is not of type AddFriendshipDenial`);
+        }
+        
+        friendshipDenial.receiverOfTheFriendshipRequest = friendshipDenial.receiverOfTheFriendshipRequest.replace('@gmail.com', '');
+        friendshipDenial.senderOfTheFriendshipRequest = friendshipDenial.senderOfTheFriendshipRequest.replace('@gmail.com', '');
+        
+        await Persistence.removeFriendRequest(friendshipDenial.senderOfTheFriendshipRequest,friendshipDenial.receiverOfTheFriendshipRequest);
     }
 }
 
