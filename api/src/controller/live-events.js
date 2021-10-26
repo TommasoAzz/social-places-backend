@@ -3,7 +3,7 @@ let express = require('express');
 let router = express.Router();
 let liveEvent = require('../service/live-event');
 const auth = require('../service/auth');
-const APIError = require('../model/error');
+const APIError = require('../model/api-error');
 
 
 router.get('/', async (req, res) => {

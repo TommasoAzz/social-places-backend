@@ -4,7 +4,7 @@ const pointOfInterest = require('../service/point-of-interest');
 const auth = require('../service/auth');
 const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
 const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
-const APIError = require('../model/error');
+const APIError = require('../model/api-error');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
 
 router.get('/', async (req, res) => {

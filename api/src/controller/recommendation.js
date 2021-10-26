@@ -3,7 +3,7 @@ let router = express.Router();
 
 const recommendation = require('../service/recommendation');
 const auth = require('../service/auth');
-const APIError = require('../model/error');
+const APIError = require('../model/api-error');
 const RecommendationRequest = require('../model/request-body/recommendation-request');
 const ValidationRequest = require('../model/request-body/validation-request');
 

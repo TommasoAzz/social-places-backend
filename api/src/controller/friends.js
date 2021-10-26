@@ -8,7 +8,7 @@ let router = express.Router();
 
 const friendService = require('../service/friend');
 const auth = require('../service/auth');
-const APIError = require('../model/error');
+const APIError = require('../model/api-error');
 
 router.get('/', async (req, res) => {
     const query = req.query;
