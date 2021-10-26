@@ -50,17 +50,17 @@ class RecommendationService {
 
     /**
      * Given data from {query} returns the recommended place category.
-     * @param {*} query (latitude, longitude, human_activity, seconds_in_day, week_day)
+     * @param {RecommendationRequest} recommendationRequest (latitude, longitude, human_activity, seconds_in_day, week_day)
      * @returns {Promise<RecommendedPlace>} the recommended place category if data is correct, `null` otherwise.
      */
-    static async recommendPlaceCategory(query) {
+    static async recommendPlaceCategory(recommendationRequest) {
         try {
-            const places_result = await superagent.get(this._api_url + 'places').query(query);
+            const places_result = await superagent.get(this._api_url + 'places').query(recommendationRequest);
 
             const body = places_result.body;
             const recommendedPlace = new RecommendedPlace(body.place_category);
 
-            await Persistence.notifyTypePlace(recommendedPlace, query.user);
+            await Persistence.notifyTypePlace(recommendedPlace, recommendationRequest.user);
 
             return recommendedPlace;
         } catch (error) {

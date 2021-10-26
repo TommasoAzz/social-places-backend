@@ -99,9 +99,9 @@ class Persistence {
      * @param {string} user 
      */
     static async checkUser(user) {
-        const userDoc = await this._connection.collection(`${this._usersDoc}`).doc(user).get();
+        const userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
         if (!userDoc.exists) {
-            console.error(`Throw error for user ${user}, does not exist.`);
+            console.error('Throw error for user ${user}, does not exist.');
         }
     }
 
@@ -379,9 +379,11 @@ class Persistence {
       */
     static async notifyTypePlace(recommendedPlace, user) {
         await this.checkUser(user);
+
         var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
 
         const pushToken = userDoc.data().notificationToken;
+
         const title = 'Suggestion!';
         const body = `You may be interested to this category ${recommendedPlace.place_category}`;
 
@@ -611,12 +613,16 @@ function friendRequestFromFirestore(document, _, __) {
  * @param {string} clickAction 
  * @returns 
  */
-async function createAndSendNotification(pushToken, title, body, clickAction) {
+async function createAndSendNotification(pushToken, title, body, click_action) {
     const message = {
         notification: {
             title: title,
-            body: body,
-            click_action: clickAction
+            body: body
+        },
+        android: {
+            notification: {
+                clickAction: click_action
+            }
         },
         token: pushToken
     };
