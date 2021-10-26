@@ -75,7 +75,7 @@ router.post('/add', async (req, res) => {
             )
         ).send();
     } else {            
-        res.status(200).json({"markId": poiId}).send();
+        res.status(200).json({markId: poiId}).send();
     }
 });
 
