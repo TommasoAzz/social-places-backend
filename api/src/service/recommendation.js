@@ -7,6 +7,7 @@ const RecommendationRequest = require('../model/request-body/recommendation-requ
 const RecommendationAccuracy = require('../model/recommendation-accuracy');
 const RecommendedPlace = require('../model/recommended-place');
 const Persistence = require('../persistence/persistence');
+const Distance = require('geo-distance');
 
 class RecommendationService {
     /**
@@ -59,8 +60,16 @@ class RecommendationService {
 
             const body = places_result.body;
             const recommendedPlace = new RecommendedPlace(body.place_category);
+            console.log('preticted activity');
+            console.log(body.place_category);
 
-            await Persistence.notifyTypePlace(recommendedPlace, recommendationRequest.user);
+            const friendSuggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest.user);
+            console.log(friendSuggestPointOfInterest);
+
+            if(friendSuggestPointOfInterest !== null){
+                console.log(friendSuggestPointOfInterest.name);
+                await Persistence.notifyTypePlace(recommendedPlace, recommendationRequest.user);
+            }
 
             return recommendedPlace;
         } catch (error) {
@@ -69,6 +78,8 @@ class RecommendationService {
             return null;
         }
     }
+   
+
 
     /**
      * Asks for the current model accuracy.
@@ -115,6 +126,77 @@ class RecommendationService {
             return null;
         }
     }
+}
+
+/**
+      * 
+      * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
+      * @param {string} user name of user that made the request
+      * @param {number} latitude of user that made the request
+      * @param {number} longitude of user that made the request
+
+      * @returns {PointOfInterest}
+*/
+async function getSuggestedPoiFromFriend(recommendedPlace,user,latitude,longitude){
+    await Persistence.checkUser(user);
+    
+    const friendList = await Persistence.getFriends(user);
+    /**
+     * @type Array<PointOfInterest>
+     */
+    let friendPoisList = [];
+
+    for(const friend of friendList){
+        let friendPoint = await Persistence.getPOIsOfUser(friend.friendUsername);
+        friendPoisList = friendPoisList.concat(friendPoint);
+    }
+
+    let minDistance = Distance('40076 km'); // Equator in meter
+    /**
+     * @type PointOfInterest
+     */
+    let resPoi;
+    for(const poi of friendPoisList){
+        console.log(poi.type);
+        if(poi.type.toLowerCase() == recommendedPlace.place_category){
+            const lat = poi.latitude;
+            const lon = poi.longitude;
+            let newDistance = checkDistance(latitude,longitude,lat,lon);
+            if(newDistance < minDistance){
+                minDistance = newDistance;
+                resPoi = poi;
+            }
+        }
+    }
+    
+    if(minDistance > Distance('3 km')){
+        return resPoi;
+    }
+    return resPoi;
+    //return null;
+}
+
+/**
+ * 
+ * @param {number} userLatitude 
+ * @param {number} userLongitude 
+ * @param {number} poiLatitude 
+ * @param {number} poiLongitude     
+ * 
+ */
+function checkDistance(userLatitude,userLongitude,poiLatitude,poiLongitude){
+    var userPos = {
+        lat: userLatitude,
+        lon: userLongitude
+    };
+
+    var poiPos = {
+        lat: poiLatitude,
+        lon: poiLongitude
+    };
+
+    var distanceBetweenPos = Distance.between(userPos, poiPos);
+    return distanceBetweenPos;
 }
 
 module.exports = RecommendationService;
