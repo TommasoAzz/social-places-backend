@@ -372,7 +372,7 @@ class Persistence {
 
     /**
       * 
-      * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
+      * @param {PointOfInterest} recommendedPlace contains poi to be notified
       * @param {string} user user that made the request
 
       * @returns 
@@ -385,10 +385,10 @@ class Persistence {
         const pushToken = userDoc.data().notificationToken;
 
         const title = 'Suggestion!';
-        const body = `You may be interested to this category ${recommendedPlace.place_category}`;
+        const body = `You may be interested to this category ${recommendedPlace.type}`;
 
         const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
-        console.info(`Notified user ${user} because ${recommendedPlace.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
+        console.info(`Notified user ${user} because place: ${recommendedPlace.name}  of type: ${recommendedPlace.type} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
     }
 
@@ -610,7 +610,7 @@ function friendRequestFromFirestore(document, _, __) {
  * @param {string} pushToken 
  * @param {string} title 
  * @param {string} body 
- * @param {string} clickAction 
+ * @param {string} click_action 
  * @returns 
  */
 async function createAndSendNotification(pushToken, title, body, click_action) {

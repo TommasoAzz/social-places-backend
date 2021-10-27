@@ -56,19 +56,19 @@ class RecommendationService {
      */
     static async recommendPlaceCategory(recommendationRequest) {
         try {
-            const places_result = await superagent.get(this._api_url + 'places').query(recommendationRequest);
+            const response = await superagent.get(this._api_url + 'places').query(recommendationRequest);
 
-            const body = places_result.body;
+            const body = response.body;
             const recommendedPlace = new RecommendedPlace(body.place_category);
             console.log('preticted activity');
             console.log(body.place_category);
 
-            const friendSuggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest.user);
-            console.log(friendSuggestPointOfInterest);
+            const suggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest.user);
+            console.log(suggestPointOfInterest);
 
-            if(friendSuggestPointOfInterest !== null){
-                console.log(friendSuggestPointOfInterest.name);
-                await Persistence.notifyTypePlace(recommendedPlace, recommendationRequest.user);
+            if(suggestPointOfInterest !== null){
+                console.log(suggestPointOfInterest.name);
+                await Persistence.notifyTypePlace(suggestPointOfInterest, recommendationRequest.user);
             }
 
             return recommendedPlace;
@@ -139,25 +139,26 @@ class RecommendationService {
 */
 async function getSuggestedPoiFromFriend(recommendedPlace,user,latitude,longitude){
     await Persistence.checkUser(user);
-    
+    //anche user poi
     const friendList = await Persistence.getFriends(user);
     /**
      * @type Array<PointOfInterest>
      */
-    let friendPoisList = [];
+    let poisList = [];
 
     for(const friend of friendList){
         let friendPoint = await Persistence.getPOIsOfUser(friend.friendUsername);
-        friendPoisList = friendPoisList.concat(friendPoint);
+        poisList = poisList.concat(friendPoint);
     }
+    poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
 
-    let minDistance = Distance('40076 km'); // Equator in meter
+    let minDistance = Distance('3 km'); // Equator in km
     /**
      * @type PointOfInterest
      */
-    let resPoi;
-    for(const poi of friendPoisList){
-        console.log(poi.type);
+    let resPoi = null;
+    for(const poi of poisList){
+
         if(poi.type.toLowerCase() == recommendedPlace.place_category){
             const lat = poi.latitude;
             const lon = poi.longitude;
@@ -167,13 +168,8 @@ async function getSuggestedPoiFromFriend(recommendedPlace,user,latitude,longitud
                 resPoi = poi;
             }
         }
-    }
-    
-    if(minDistance > Distance('3 km')){
-        return resPoi;
-    }
+    }    
     return resPoi;
-    //return null;
 }
 
 /**
