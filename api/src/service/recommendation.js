@@ -7,7 +7,7 @@ const RecommendationRequest = require('../model/request-body/recommendation-requ
 const RecommendationAccuracy = require('../model/recommendation-accuracy');
 const RecommendedPlace = require('../model/recommended-place');
 const Persistence = require('../persistence/persistence');
-const Distance = require('geo-distance');
+const geolib = require('geolib');
 
 class RecommendationService {
     /**
@@ -63,7 +63,7 @@ class RecommendationService {
             console.log('preticted activity');
             console.log(body.place_category);
 
-            const suggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest.user);
+            const suggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest);
             console.log(suggestPointOfInterest);
 
             if(suggestPointOfInterest !== null){
@@ -131,13 +131,14 @@ class RecommendationService {
 /**
       * 
       * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
-      * @param {string} user name of user that made the request
+      * @param {RecommendationRequest} recommendationRequest name of user that made the request
       * @param {number} latitude of user that made the request
       * @param {number} longitude of user that made the request
 
       * @returns {PointOfInterest}
 */
-async function getSuggestedPoiFromFriend(recommendedPlace,user,latitude,longitude){
+async function getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest){
+    const user = recommendationRequest.user;
     await Persistence.checkUser(user);
     //anche user poi
     const friendList = await Persistence.getFriends(user);
@@ -152,24 +153,48 @@ async function getSuggestedPoiFromFriend(recommendedPlace,user,latitude,longitud
     }
     poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
 
-    let minDistance = Distance('3 km'); // Equator in km
-    /**
-     * @type PointOfInterest
-     */
-    let resPoi = null;
-    for(const poi of poisList){
 
-        if(poi.type.toLowerCase() == recommendedPlace.place_category){
-            const lat = poi.latitude;
-            const lon = poi.longitude;
-            let newDistance = checkDistance(latitude,longitude,lat,lon);
-            if(newDistance < minDistance){
-                minDistance = newDistance;
-                resPoi = poi;
-            }
-        }
-    }    
-    return resPoi;
+    let lat_lon_mapped = poisList.map((poi,_,__) => {
+        return {latitude:poi.latitude,longitude:poi.longitude};
+    });
+    const userPosition = { latitude: recommendationRequest.latitude, longitude: recommendationRequest.longitude };
+
+    let nearest = geolib.findNearest(userPosition,lat_lon_mapped);
+
+    const distance = geolib.getDistance(userPosition,nearest);
+
+    let poi = null;
+    if(distance < 3000){
+        const index = lat_lon_mapped.indexOf(nearest);
+        poi = poisList[index];
+    }
+    return poi;
+
+
+    // let minDistance = Distance('3 km'); // Equator in km
+    // console.log('minDistance');
+    // console.log(minDistance);
+
+    // /**
+    //  * @type PointOfInterest
+    //  */
+    // let resPoi = null;
+    // for(const poi of poisList){
+
+    //     if(poi.type.toLowerCase() == recommendedPlace.place_category){
+    //         const lat = poi.latitude;
+    //         const lon = poi.longitude;
+    //         let newDistance = checkDistance(latitude,longitude,lat,lon);
+    //         console.log(newDistance);
+    //         if(newDistance < minDistance){
+    //             console.log('New min distance');
+    //             console.log(poi);
+    //             minDistance = newDistance;
+    //             resPoi = poi;
+    //         }
+    //     }
+    // }    
+    // return resPoi;
 }
 
 /**
