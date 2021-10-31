@@ -1,7 +1,8 @@
 *.pem
 *firebase*.json
 context_aware/venv
-context_aware/*/__pycache__
+context_aware/contextaware/__pycache__
+context_aware/contextaware/classifier/__pycache__
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
