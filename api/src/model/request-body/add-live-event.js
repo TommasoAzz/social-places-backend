@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../../utils/validate-arguments');
+
 class AddLiveEvent {
     /**
      * Constructs a live event creation request body.
@@ -10,30 +12,12 @@ class AddLiveEvent {
      * @param {number} longitude Longitude of the place.
      */
     constructor(expiresAfter, owner, name, address, latitude, longitude) {
-        if(!(typeof(expiresAfter) === 'number')) {
-            console.error(`Argument ${expiresAfter} is not a number`);
-            throw TypeError(`Argument ${expiresAfter} is not a number`);
-        }
-        if(!(typeof(owner) === 'string')) {
-            console.error(`Argument ${owner} is not a string`);
-            throw TypeError(`Argument ${owner} is not a string`);
-        }
-        if(!(typeof(name) === 'string')) {
-            console.error(`Argument ${name} is not a string`);
-            throw TypeError(`Argument ${name} is not a string`);
-        }
-        if(!(typeof(address) === 'string')) {
-            console.error(`Argument ${address} is not a string`);
-            throw TypeError(`Argument ${address} is not a string`);
-        }
-        if(!(typeof(latitude) === 'number')) {
-            console.error(`Argument ${latitude} is not a number`);
-            throw TypeError(`Argument ${latitude} is not a number`);
-        }
-        if(!(typeof(longitude) === 'number')) {
-            console.error(`Argument ${longitude} is not a number`);
-            throw TypeError(`Argument ${longitude} is not a number`);
-        }
+        validatePrimitiveType(address, 'string');
+        validatePrimitiveType(latitude, 'number');
+        validatePrimitiveType(longitude, 'number');
+        validatePrimitiveType(name, 'string');
+        validatePrimitiveType(owner, 'string');
+        validatePrimitiveType(expiresAfter, 'number');
 
         this.expiresAfter = expiresAfter;
         this.owner = owner;

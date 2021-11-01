@@ -2,6 +2,7 @@ const LiveEvent = require('../model/live-event');
 const AddLiveEvent = require('../model/request-body/add-live-event');
 
 const Persistence = require('../persistence/persistence');
+const { validatePrimitiveType } = require('../utils/validate-arguments');
 
 class LiveEventService {
     /**
@@ -11,10 +12,7 @@ class LiveEventService {
      * @returns a list of `LiveEvent`. 
      */
     static async getLiveEvents(user) {
-        if(!(typeof(user) === 'string')) {
-            console.error(`Argument ${user} is not a string`);
-            throw TypeError(`Argument ${user} is not a string`);
-        }
+        validatePrimitiveType(user, 'string');
         
         const currentSeconds = Math.floor(Date.now() / 1000);
         return (await Persistence.getPersonalLiveEvents(user)).concat(
@@ -29,8 +27,8 @@ class LiveEventService {
      */
     static async addLiveEvent(liveEvent)  {
         if(!(liveEvent instanceof AddLiveEvent)) {
-            console.error(`Argument ${liveEvent} is not of type AddLiveEvent`);
-            throw TypeError(`Argument ${liveEvent} is not of type AddLiveEvent`);
+            console.error(`Argument liveEvent instantiated with ${liveEvent} is not of type AddLiveEvent.`);
+            throw new TypeError(`Argument liveEvent instantiated with ${liveEvent} is not of type AddLiveEvent.`);
         }
 
         const liveEventToAdd = LiveEvent.fromLiveEvent(liveEvent);

@@ -5,6 +5,7 @@ const RemoveFriendshipRequest = require('../model/request-body/remove-friendship
 
 const Persistence = require('../persistence/persistence');
 const AddFriendshipDenial = require('../model/request-body/add-friendship-denial');
+const { validatePrimitiveType } = require('../utils/validate-arguments');
 
 class FriendService {
     /**
@@ -14,11 +15,7 @@ class FriendService {
      * @returns a list of `Friend`. 
      */
     static async getFriends(user) {
-        if(!(typeof(user) === 'string')) {
-            console.error(`Argument ${user} is not a string`);
-            throw TypeError(`Argument ${user} is not a string`);
-        }
-        
+        validatePrimitiveType(user, 'string');
         
         return await Persistence.getFriends(user);
     }
@@ -30,8 +27,8 @@ class FriendService {
      */
     static async sendAddFriendshipRequest(friendshipRequest) {
         if(!(friendshipRequest instanceof AddFriendshipRequest)) {
-            console.error(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
-            throw TypeError(`Argument ${friendshipRequest} is not of type AddFriendshipRequest`);
+            console.error(`Argument friendshipRequest instantiated with ${friendshipRequest} is not of type AddFriendshipRequest.`);
+            throw new TypeError(`Argument friendshipRequest instantiated with ${friendshipRequest} is not of type AddFriendshipRequest.`);
         }
         
         const receiver = await Persistence.getUser(friendshipRequest.receiver);
@@ -51,8 +48,8 @@ class FriendService {
      */
     static async sendAddFriendshipConfirmation(friendshipConfirmation) {
         if(!(friendshipConfirmation instanceof AddFriendshipConfirmation)) {
-            console.error(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
-            throw TypeError(`Argument ${friendshipConfirmation} is not of type AddFriendshipConfirmation`);
+            console.error(`Argument friendshipConfirmation instantiated with ${friendshipConfirmation} is not of type AddFriendshipConfirmation.`);
+            throw new TypeError(`Argument friendshipConfirmation instantiated with ${friendshipConfirmation} is not of type AddFriendshipConfirmation.`);
         }
         
         const currentReceiver = await Persistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
@@ -77,12 +74,12 @@ class FriendService {
      */
     static async sendRemoveFriendshipRequest(friendshipRemoval) {
         if(!(friendshipRemoval instanceof RemoveFriendshipRequest)) {
-            console.error(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
-            throw TypeError(`Argument ${friendshipRemoval} is not of type RemoveFriendshipRequest`);
+            console.error(`Argument friendshipRemoval instantiated with ${friendshipRemoval} is not of type RemoveFriendshipRequest.`);
+            throw new TypeError(`Argument friendshipRemoval instantiated with ${friendshipRemoval} is not of type RemoveFriendshipRequest.`);
         }
         
-        friendshipRemoval.receiver = friendshipRemoval.receiver.replace('@gmail.com', '');
-        friendshipRemoval.sender = friendshipRemoval.sender.replace('@gmail.com', '');
+        friendshipRemoval.receiver = friendshipRemoval.receiver.split('@')[0];
+        friendshipRemoval.sender = friendshipRemoval.sender.split('@')[0];
 
         await Persistence.removeFriend(friendshipRemoval.sender, friendshipRemoval.receiver);
         await Persistence.removeFriend(friendshipRemoval.receiver, friendshipRemoval.sender);
@@ -93,14 +90,14 @@ class FriendService {
      * 
      * @param {AddFriendshipDenial} friendshipDenial
      */
-     static async sendAddFriendshipDenial(friendshipDenial) {
+    static async sendAddFriendshipDenial(friendshipDenial) {
         if(!(friendshipDenial instanceof AddFriendshipDenial)) {
-            console.error(`Argument ${friendshipDenial} is not of type AddFriendshipDenial`);
-            throw TypeError(`Argument ${friendshipDenial} is not of type AddFriendshipDenial`);
+            console.error(`Argument friendshipDenial instantiated with ${friendshipDenial} is not of type AddFriendshipDenial.`);
+            throw new TypeError(`Argument friendshipDenial instantiated with ${friendshipDenial} is not of type AddFriendshipDenial.`);
         }
         
-        friendshipDenial.receiverOfTheFriendshipRequest = friendshipDenial.receiverOfTheFriendshipRequest.replace('@gmail.com', '');
-        friendshipDenial.senderOfTheFriendshipRequest = friendshipDenial.senderOfTheFriendshipRequest.replace('@gmail.com', '');
+        friendshipDenial.receiverOfTheFriendshipRequest = friendshipDenial.receiverOfTheFriendshipRequest.split('@')[0];
+        friendshipDenial.senderOfTheFriendshipRequest = friendshipDenial.senderOfTheFriendshipRequest.split('@')[0];
         
         await Persistence.removeFriendRequest(friendshipDenial.senderOfTheFriendshipRequest,friendshipDenial.receiverOfTheFriendshipRequest);
     }

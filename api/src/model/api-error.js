@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../utils/validate-arguments');
+
 class APIError {
     /**
      * Constructs an error to be returned to the user.
@@ -6,6 +8,7 @@ class APIError {
      * 
      */
     constructor(message) {
+        validatePrimitiveType(message, 'string');
         this.message = message;
     }
 

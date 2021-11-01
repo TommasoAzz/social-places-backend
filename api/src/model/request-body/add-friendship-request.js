@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../../utils/validate-arguments');
+
 class AddFriendshipRequest {
     /**
      * Constructs a friendship request body.
@@ -6,14 +8,8 @@ class AddFriendshipRequest {
      * @param {string} sender Sender of the friendship request.
      */
     constructor(receiver, sender) {
-        if(!(typeof(receiver) === 'string')) {
-            console.error(`Argument ${receiver} is not a string`);
-            throw TypeError(`Argument ${receiver} is not a string`);
-        }
-        if(!(typeof(sender) === 'string')) {
-            console.error(`Argument ${sender} is not a string`);
-            throw TypeError(`Argument ${sender} is not a string`);
-        }
+        validatePrimitiveType(receiver, 'string');
+        validatePrimitiveType(sender, 'string');
         
         this.receiver = receiver;
         this.sender = sender;

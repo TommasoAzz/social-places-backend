@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../utils/validate-arguments');
+
 class RecommendationAccuracy {
     /**
      * Recommendation accuracy of the classifier implemented in the context aware server.
@@ -6,14 +8,8 @@ class RecommendationAccuracy {
      * @param {number} correct_samples Number of correct samples in the total number of samples in the training dataset.
      */
     constructor(accuracy, correct_samples) {
-        if(!(typeof(accuracy) === 'number')) {
-            console.error(`Argument ${accuracy} is not a number`);
-            throw TypeError(`Argument ${accuracy} is not a number`);
-        }
-        if(!(typeof(correct_samples) === 'number')) {
-            console.error(`Argument ${correct_samples} is not a number`);
-            throw TypeError(`Argument ${correct_samples} is not a number`);
-        }
+        validatePrimitiveType(accuracy, 'number');
+        validatePrimitiveType(correct_samples, 'number');
         
         this.accuracy = accuracy;
         this.correct_samples = correct_samples;

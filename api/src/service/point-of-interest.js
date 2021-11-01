@@ -6,6 +6,7 @@ const AddPointOfInterestPoi = require('../model/request-body/add-point-of-intere
 const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 
 const Persistence = require('../persistence/persistence');
+const { validatePrimitiveType } = require('../utils/validate-arguments');
 
 class PointOfInterestService {
     /**
@@ -15,10 +16,7 @@ class PointOfInterestService {
      * @returns An `Array<PointOfInterest>` of points of interest.
      */
     static async getPOIsOfUser(user) {
-        if(!(typeof(user) === 'string')) {
-            console.error(`Argument ${user} is not of type string`);
-            throw TypeError(`Argument ${user} is not of type string`);
-        }
+        validatePrimitiveType(user, 'string');
         
         return await Persistence.getPOIsOfUser(user);
     }
@@ -32,14 +30,8 @@ class PointOfInterestService {
      * @returns An `Array<PointOfInterest>` of points of interest.
      */
     static async getPOIsOfFriend(user, friend) {
-        if(!(typeof(user) === 'string')) {
-            console.error(`Argument ${user} is not of type string`);
-            throw TypeError(`Argument ${user} is not of type string`);
-        }
-        if(!(typeof(friend) === 'string')) {
-            console.error(`Argument ${friend} is not of type string`);
-            throw TypeError(`Argument ${friend} is not of type string`);
-        }
+        validatePrimitiveType(user, 'string');
+        validatePrimitiveType(friend, 'string');
 
         const friendsOfFriend = await Persistence.getFriends(friend);
         if(!friendsOfFriend.map((f) => f.friendUsername).includes(user)) {
@@ -58,26 +50,26 @@ class PointOfInterestService {
      */
     static async addPointOfInterest(user, poi) {
         if(!(poi instanceof AddPointOfInterestPoi)) {
-            console.error(`Argument ${poi} is not of type AddPointOfInterest`);
-            throw TypeError(`Argument ${poi} is not of type AddPointOfInterest`);  
+            console.error(`Argument poi instantiated with ${poi} is not of type AddPointOfInterestPoi.`);
+            throw new TypeError(`Argument poi instantiated with ${poi} is not of type AddPointOfInterestPoi.`);
         }
 
         return await Persistence.addPointOfInterest(user, poi);
     }
 
     /**
-     * Removes a point of interest (identified by `removePointOfInterest.poiId`) owned by user identified with `removePointOfInterest.user`.
+     * Removes a point of interest (identified by `removePointOfInterest.markId`) owned by user identified with `removePointOfInterest.user`.
      * 
      * @param {RemovePointOfInterest} removePointOfInterest Request of removal of point of interest.
      */
     static async removePointOfInterest(removePointOfInterest) {
         if(!(removePointOfInterest instanceof RemovePointOfInterest)) {
-            console.error(`Argument ${removePointOfInterest} is not of type RemovePointOfInterest`);
-            throw TypeError(`Argument ${removePointOfInterest} is not of type RemovePointOfInterest`);  
+            console.error(`Argument removePointOfInterest instantiated with ${removePointOfInterest} is not of type RemovePointOfInterest.`);
+            throw new TypeError(`Argument removePointOfInterest instantiated with ${removePointOfInterest} is not of type RemovePointOfInterest.`);  
         }
 
 
-        await Persistence.removePointOfInterest(removePointOfInterest.poiId, removePointOfInterest.user);
+        await Persistence.removePointOfInterest(removePointOfInterest.markId, removePointOfInterest.user);
     }
 }
 

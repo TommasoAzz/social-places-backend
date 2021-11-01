@@ -1,3 +1,4 @@
+const { validatePrimitiveType } = require('../../utils/validate-arguments');
 const AddPointOfInterestPoi = require('./add-point-of-interest-poi');
 
 class AddPointOfInterest {
@@ -8,13 +9,10 @@ class AddPointOfInterest {
      * @param {AddPointOfInterestPoi} poi new point of interest data.
      */
     constructor(user, poi) {
-        if(!(typeof(user) === 'string')) {
-            console.error(`Argument ${user} is not a string`);
-            throw TypeError(`Argument ${user} is not a string`);
-        }
+        validatePrimitiveType(user, 'string');
         if(!(poi instanceof AddPointOfInterestPoi)) {
-            console.error(`Argument ${poi} is not of type AddPointOfInterestPoi`);
-            throw TypeError(`Argument ${poi} is not of type AddPointOfInterestPoi`);
+            console.error(`Argument poi instantiated with ${poi} is not of type AddPointOfInterestPoi.`);
+            throw new TypeError(`Argument poi instantiated with ${poi} is not of type AddPointOfInterestPoi.`);
         }
         
         this.user = user;

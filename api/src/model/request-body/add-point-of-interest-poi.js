@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../../utils/validate-arguments');
+
 class AddPointOfInterestPoi {
     /**
      * Constructs a point of interest creation request body.
@@ -12,38 +14,14 @@ class AddPointOfInterestPoi {
      * @param {string} url URL linked to the event.
      */
     constructor(address, type, latitude, longitude, name, phoneNumber, visibility, url) {
-        if(!(typeof(address) === 'string')) {
-            console.error(`Argument ${address} is not a string`);
-            throw TypeError(`Argument ${address} is not a string`);
-        }
-        if(!(typeof(type) === 'string')) {
-            console.error(`Argument ${type} is not a string`);
-            throw TypeError(`Argument ${type} is not a string`);
-        }
-        if(!(typeof(latitude) === 'number')) {
-            console.error(`Argument ${latitude} is not a number`);
-            throw TypeError(`Argument ${latitude} is not a number`);
-        }
-        if(!(typeof(longitude) === 'number')) {
-            console.error(`Argument ${longitude} is not a number`);
-            throw TypeError(`Argument ${longitude} is not a number`);
-        }
-        if(!(typeof(name) === 'string')) {
-            console.error(`Argument ${name} is not a string`);
-            throw TypeError(`Argument ${name} is not a string`);
-        }
-        if(!(typeof(phoneNumber) === 'string')) {
-            console.error(`Argument ${phoneNumber} is not a string`);
-            throw TypeError(`Argument ${phoneNumber} is not a string`);
-        }
-        if(!(typeof(visibility) === 'string')) {
-            console.error(`Argument ${visibility} is not a string`);
-            throw TypeError(`Argument ${visibility} is not a string`);
-        }
-        if(!(typeof(url) === 'string')) {
-            console.error(`Argument ${url} is not a string`);
-            throw TypeError(`Argument ${url} is not a string`);
-        }
+        validatePrimitiveType(address, 'string');
+        validatePrimitiveType(type, 'string');
+        validatePrimitiveType(latitude, 'number');
+        validatePrimitiveType(longitude, 'number');
+        validatePrimitiveType(name, 'string');
+        validatePrimitiveType(phoneNumber, 'string');
+        validatePrimitiveType(visibility, 'string');
+        validatePrimitiveType(url, 'string');
 
         this.address = address;
         this.type = type;

@@ -1,3 +1,4 @@
+const { validatePrimitiveType } = require('../utils/validate-arguments');
 // eslint-disable-next-line no-unused-vars
 const AddLiveEvent = require('./request-body/add-live-event');
 
@@ -14,34 +15,13 @@ class LiveEvent {
      * @param {number} expirationDate Expiration date in seconds
      */
     constructor(id, address, latitude, longitude, name, owner, expirationDate) {
-        if(!(typeof(id) === 'string')) {
-            console.error(`Argument ${id} is not a string`);
-            throw TypeError(`Argument ${id} is not a string`);
-        }
-        if(!(typeof(address) === 'string')) {
-            console.error(`Argument ${address} is not a string`);
-            throw TypeError(`Argument ${address} is not a string`);
-        }
-        if(!(typeof(latitude) === 'number')) {
-            console.error(`Argument ${latitude} is not a number`);
-            throw TypeError(`Argument ${latitude} is not a number`);
-        }
-        if(!(typeof(longitude) === 'number')) {
-            console.error(`Argument ${longitude} is not a number`);
-            throw TypeError(`Argument ${longitude} is not a number`);
-        }
-        if(!(typeof(name) === 'string')) {
-            console.error(`Argument ${name} is not a string`);
-            throw TypeError(`Argument ${name} is not a string`);
-        }
-        if(!(typeof(owner) === 'string')) {
-            console.error(`Argument ${owner} is not a string`);
-            throw TypeError(`Argument ${owner} is not a string`);
-        }
-        if(!(typeof(expirationDate) === 'number')) {
-            console.error(`Argument ${expirationDate} is not a number`);
-            throw TypeError(`Argument ${expirationDate} is not a number`);
-        }
+        validatePrimitiveType(id, 'string');
+        validatePrimitiveType(address, 'string');
+        validatePrimitiveType(latitude, 'number');
+        validatePrimitiveType(longitude, 'number');
+        validatePrimitiveType(name, 'string');
+        validatePrimitiveType(owner, 'string');
+        validatePrimitiveType(expirationDate, 'number');
 
         this.id = id;
         this.address = address;

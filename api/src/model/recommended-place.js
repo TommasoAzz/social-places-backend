@@ -1,3 +1,5 @@
+const { validatePrimitiveType } = require('../utils/validate-arguments');
+
 class RecommendedPlace {
     /**
      * Recommendation returned by the Context Aware APIs.
@@ -5,10 +7,7 @@ class RecommendedPlace {
      * @param {string} place_category suggested category.
      */
     constructor(place_category) {
-        if(!(typeof(place_category) === 'string')) {
-            console.error(`Argument ${place_category} is not a string`);
-            throw TypeError(`Argument ${place_category} is not a string`);
-        }
+        validatePrimitiveType(place_category, 'string');
         
         this.place_category = place_category;
     }
