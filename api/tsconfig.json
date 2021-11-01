@@ -1,7 +1,6 @@
 {
   "exclude": [
-    "./src/app.js",
-    "./src/app.old.js"
+    "./src/app.js"
   ],
   "compilerOptions": {
     "target": "ES6",
