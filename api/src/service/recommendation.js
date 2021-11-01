@@ -1,5 +1,6 @@
-// @ts-nocheck
 const superagent = require('superagent');
+const geolib = require('geolib');
+
 // eslint-disable-next-line no-unused-vars
 const ValidationRequest = require('../model/request-body/validation-request');
 // eslint-disable-next-line no-unused-vars
@@ -7,7 +8,8 @@ const RecommendationRequest = require('../model/request-body/recommendation-requ
 const RecommendationAccuracy = require('../model/recommendation-accuracy');
 const RecommendedPlace = require('../model/recommended-place');
 const Persistence = require('../persistence/persistence');
-const geolib = require('geolib');
+// eslint-disable-next-line no-unused-vars
+const PointOfInterest = require('../model/point-of-interest');
 
 class RecommendationService {
     /**
@@ -25,18 +27,23 @@ class RecommendationService {
 
     /**
      * Checks whether `validationRequest` is correct.
+     * 
      * @param {ValidationRequest} validationRequest the request for validation.
      * @returns {Promise<boolean>} `true` if the suggested category for the place is valid, `false` if not valid, `null` otherwise.
      */
     static async shouldAdvisePlaceCategory(validationRequest) {
+        if (!(validationRequest instanceof ValidationRequest)) {
+            console.error(`Argument validationRequest instantiated with ${validationRequest} is not of type ValidationRequest.`);
+            throw new TypeError(`Argument validationRequest instantiated with ${validationRequest} is not of type ValidationRequest.`);
+        }
         try {
             const validity_result = await superagent.get(this._api_url + 'validity').query(validationRequest);
-            
+
             /**
              * @type number
              */
             const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
-            
+
             if (isPlaceValid === 1) {
                 await Persistence.notifyValidPlace(validationRequest);
             }
@@ -51,23 +58,24 @@ class RecommendationService {
 
     /**
      * Given data from {query} returns the recommended place category.
+     * 
      * @param {RecommendationRequest} recommendationRequest (latitude, longitude, human_activity, seconds_in_day, week_day)
      * @returns {Promise<RecommendedPlace>} the recommended place category if data is correct, `null` otherwise.
      */
     static async recommendPlaceCategory(recommendationRequest) {
+        if (!(recommendationRequest instanceof RecommendationRequest)) {
+            console.error(`Argument recommendationRequest instantiated with ${recommendationRequest} is not of type RecommendationRequest.`);
+            throw new TypeError(`Argument recommendationRequest instantiated with ${recommendationRequest} is not of type RecommendationRequest.`);
+        }
         try {
             const response = await superagent.get(this._api_url + 'places').query(recommendationRequest);
 
             const body = response.body;
             const recommendedPlace = new RecommendedPlace(body.place_category);
-            console.log('preticted activity');
-            console.log(body.place_category);
 
-            const suggestPointOfInterest = await getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest);
-            console.log(suggestPointOfInterest);
+            const suggestPointOfInterest = await this.getSuggestedPoiFromFriend(recommendedPlace, recommendationRequest);
 
-            if(suggestPointOfInterest !== null){
-                console.log(suggestPointOfInterest.name);
+            if (suggestPointOfInterest !== null) {
                 await Persistence.notifyTypePlace(suggestPointOfInterest, recommendationRequest.user);
             }
 
@@ -78,14 +86,14 @@ class RecommendationService {
             return null;
         }
     }
-   
+
 
 
     /**
      * Asks for the current model accuracy.
      * 
-     * @param {string} user to be notified
-     * @returns {Promise<RecommendationAccuracy>}the new accuracy of the model.
+     * @param {string} user to be notified.
+     * @returns {Promise<RecommendationAccuracy>} the new accuracy of the model.
      */
     static async computeModelAccuracy(user) {
         try {
@@ -126,98 +134,52 @@ class RecommendationService {
             return null;
         }
     }
-}
 
-/**
-      * 
-      * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
-      * @param {RecommendationRequest} recommendationRequest name of user that made the request
-      * @param {number} latitude of user that made the request
-      * @param {number} longitude of user that made the request
-
-      * @returns {PointOfInterest}
-*/
-async function getSuggestedPoiFromFriend(recommendedPlace,recommendationRequest){
-    const user = recommendationRequest.user;
-    await Persistence.checkUser(user);
-    //anche user poi
-    const friendList = await Persistence.getFriends(user);
     /**
-     * @type Array<PointOfInterest>
+     * 
+     * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
+     * @param {RecommendationRequest} recommendationRequest name of user that made the request
+     * @returns {Promise<PointOfInterest>}
      */
-    let poisList = [];
+    static async getSuggestedPoiFromFriend(recommendedPlace, recommendationRequest) {
+        const user = recommendationRequest.user;
+        await Persistence.checkUser(user);
 
-    for(const friend of friendList){
-        let friendPoint = await Persistence.getPOIsOfUser(friend.friendUsername);
-        poisList = poisList.concat(friendPoint);
+        // Returns the whole objects of the friends of user.
+        const friendList = await Persistence.getFriends(user);
+        
+        /**
+         * @type Array<PointOfInterest>
+         */
+        let poisList = [];
+
+        // Retrieving the list of points of interest of the friends and of the user.
+        for (const friend of friendList) {
+            const friendPoint = await Persistence.getPOIsOfUser(friend.friendUsername);
+            poisList = poisList.concat(friendPoint);
+        }
+        poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
+
+
+        // eslint-disable-next-line no-unused-vars
+        const lat_lon_mapped = poisList.map((poi, _, __) => {
+            return { latitude: poi.latitude, longitude: poi.longitude };
+        });
+        const userPosition = { latitude: recommendationRequest.latitude, longitude: recommendationRequest.longitude };
+
+        const nearest = geolib.findNearest(userPosition, lat_lon_mapped);
+
+        const distance = geolib.getDistance(userPosition, nearest);
+
+        let poi = null;
+        if (distance < 3000) {
+            // @ts-ignore
+            const index = lat_lon_mapped.indexOf(nearest);
+            poi = poisList[index];
+        }
+        
+        return poi;
     }
-    poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
-
-
-    let lat_lon_mapped = poisList.map((poi,_,__) => {
-        return {latitude:poi.latitude,longitude:poi.longitude};
-    });
-    const userPosition = { latitude: recommendationRequest.latitude, longitude: recommendationRequest.longitude };
-
-    let nearest = geolib.findNearest(userPosition,lat_lon_mapped);
-
-    const distance = geolib.getDistance(userPosition,nearest);
-
-    let poi = null;
-    if(distance < 3000){
-        const index = lat_lon_mapped.indexOf(nearest);
-        poi = poisList[index];
-    }
-    return poi;
-
-
-    // let minDistance = Distance('3 km'); // Equator in km
-    // console.log('minDistance');
-    // console.log(minDistance);
-
-    // /**
-    //  * @type PointOfInterest
-    //  */
-    // let resPoi = null;
-    // for(const poi of poisList){
-
-    //     if(poi.type.toLowerCase() == recommendedPlace.place_category){
-    //         const lat = poi.latitude;
-    //         const lon = poi.longitude;
-    //         let newDistance = checkDistance(latitude,longitude,lat,lon);
-    //         console.log(newDistance);
-    //         if(newDistance < minDistance){
-    //             console.log('New min distance');
-    //             console.log(poi);
-    //             minDistance = newDistance;
-    //             resPoi = poi;
-    //         }
-    //     }
-    // }    
-    // return resPoi;
-}
-
-/**
- * 
- * @param {number} userLatitude 
- * @param {number} userLongitude 
- * @param {number} poiLatitude 
- * @param {number} poiLongitude     
- * 
- */
-function checkDistance(userLatitude,userLongitude,poiLatitude,poiLongitude){
-    var userPos = {
-        lat: userLatitude,
-        lon: userLongitude
-    };
-
-    var poiPos = {
-        lat: poiLatitude,
-        lon: poiLongitude
-    };
-
-    var distanceBetweenPos = Distance.between(userPos, poiPos);
-    return distanceBetweenPos;
 }
 
 module.exports = RecommendationService;

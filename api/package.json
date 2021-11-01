@@ -10,9 +10,9 @@
   "scripts": {
     "start": "node src/app.js"
   },
-  "name": "appserver",
+  "name": "socialplaces-api",
   "version": "1.0.0",
-  "description": "Backend for a location- and social-aware system.",
+  "description": "Backend for the location- and social-aware system SocialPlaces.",
   "main": "app.js",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
