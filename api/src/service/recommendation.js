@@ -57,12 +57,12 @@ class RecommendationService {
     }
 
     /**
-     * Given data from {query} returns the recommended place category.
+     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
      * 
      * @param {RecommendationRequest} recommendationRequest (latitude, longitude, human_activity, seconds_in_day, week_day)
      * @returns {Promise<RecommendedCategory>} the recommended place category if data is correct, `null` otherwise.
      */
-    static async recommendPlaceCategory(recommendationRequest) {
+    static async recommendPlaceOfCategory(recommendationRequest) {
         if (!(recommendationRequest instanceof RecommendationRequest)) {
             console.error(`Argument recommendationRequest instantiated with ${recommendationRequest} is not of type RecommendationRequest.`);
             throw new TypeError(`Argument recommendationRequest instantiated with ${recommendationRequest} is not of type RecommendationRequest.`);

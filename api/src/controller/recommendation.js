@@ -55,7 +55,7 @@ router.post('/places', async (req, res) => {
         parseInt(body.week_day + '')
     );
 
-    const result = await recommendation.recommendPlaceCategory(recommendationRequest);
+    const result = await recommendation.recommendPlaceOfCategory(recommendationRequest);
 
     if(result !== null) {
         res.status(200).json(result).send();
