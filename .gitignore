@@ -1,5 +1,6 @@
 *.pem
 *firebase*.json
+.vscode/
 context_aware/venv
 context_aware/contextaware/__pycache__
 context_aware/contextaware/classifier/__pycache__
