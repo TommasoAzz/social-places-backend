@@ -6,7 +6,7 @@ const ValidationRequest = require('../model/request-body/validation-request');
 // eslint-disable-next-line no-unused-vars
 const RecommendationRequest = require('../model/request-body/recommendation-request');
 const RecommendationAccuracy = require('../model/recommendation-accuracy');
-const RecommendedPlace = require('../model/recommended-place');
+const RecommendedCategory = require('../model/recommended-category');
 const Persistence = require('../persistence/persistence');
 // eslint-disable-next-line no-unused-vars
 const PointOfInterest = require('../model/point-of-interest');
@@ -60,7 +60,7 @@ class RecommendationService {
      * Given data from {query} returns the recommended place category.
      * 
      * @param {RecommendationRequest} recommendationRequest (latitude, longitude, human_activity, seconds_in_day, week_day)
-     * @returns {Promise<RecommendedPlace>} the recommended place category if data is correct, `null` otherwise.
+     * @returns {Promise<RecommendedCategory>} the recommended place category if data is correct, `null` otherwise.
      */
     static async recommendPlaceCategory(recommendationRequest) {
         if (!(recommendationRequest instanceof RecommendationRequest)) {
@@ -71,12 +71,12 @@ class RecommendationService {
             const response = await superagent.get(this._api_url + 'places').query(recommendationRequest);
 
             const body = response.body;
-            const recommendedPlace = new RecommendedPlace(body.place_category);
+            const recommendedPlace = new RecommendedCategory(body.place_category);
 
-            const suggestPointOfInterest = await this.getSuggestedPoiFromFriend(recommendedPlace, recommendationRequest);
+            const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedPlace, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
-                await Persistence.notifyTypePlace(suggestPointOfInterest, recommendationRequest.user);
+                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user);
             }
 
             return recommendedPlace;
@@ -137,13 +137,13 @@ class RecommendationService {
 
     /**
      * 
-     * @param {RecommendedPlace} recommendedPlace contains place_category to be notified
+     * @param {RecommendedCategory} recommendedCategory contains place_category to be notified
      * @param {RecommendationRequest} recommendationRequest name of user that made the request
      * @returns {Promise<PointOfInterest>}
      */
-    static async getSuggestedPoiFromFriend(recommendedPlace, recommendationRequest) {
+    static async getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest) {
         const user = recommendationRequest.user;
-        await Persistence.checkUser(user);
+        await Persistence.checkIfUserDocumentExists(user);
 
         // Returns the whole objects of the friends of user.
         const friendList = await Persistence.getFriends(user);
@@ -159,13 +159,20 @@ class RecommendationService {
             poisList = poisList.concat(friendPoint);
         }
         poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
-
-
-        // eslint-disable-next-line no-unused-vars
-        const lat_lon_mapped = poisList.map((poi, _, __) => {
-            return { latitude: poi.latitude, longitude: poi.longitude };
-        });
-        const userPosition = { latitude: recommendationRequest.latitude, longitude: recommendationRequest.longitude };
+        
+        const lat_lon_mapped = poisList
+            .filter((poi) => poi.type === recommendedCategory.place_category)
+            // eslint-disable-next-line no-unused-vars
+            .map((poi, _, __) => {
+                return {
+                    latitude: poi.latitude,
+                    longitude: poi.longitude
+                };
+            });
+        const userPosition = {
+            latitude: recommendationRequest.latitude,
+            longitude: recommendationRequest.longitude
+        };
 
         const nearest = geolib.findNearest(userPosition, lat_lon_mapped);
 

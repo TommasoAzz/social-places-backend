@@ -1,8 +1,8 @@
 const { validatePrimitiveType } = require('../utils/validate-arguments');
 
-class RecommendedPlace {
+class RecommendedCategory {
     /**
-     * Recommendation returned by the Context Aware APIs.
+     * Recommendation place category returned by the Context Aware APIs.
      * 
      * @param {string} place_category suggested category.
      */
@@ -13,4 +13,4 @@ class RecommendedPlace {
     }
 }
 
-module.exports = RecommendedPlace;
+module.exports = RecommendedCategory;
