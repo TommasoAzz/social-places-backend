@@ -147,7 +147,7 @@ class RecommendationService {
 
         // Returns the whole objects of the friends of user.
         const friendList = await Persistence.getFriends(user);
-        
+
         /**
          * @type Array<PointOfInterest>
          */
@@ -159,9 +159,9 @@ class RecommendationService {
             poisList = poisList.concat(friendPoint);
         }
         poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
-        
+
         const lat_lon_mapped = poisList
-            .filter((poi) => poi.type === recommendedCategory.place_category)
+            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase())
             // eslint-disable-next-line no-unused-vars
             .map((poi, _, __) => {
                 return {
@@ -178,14 +178,18 @@ class RecommendationService {
 
         const distance = geolib.getDistance(userPosition, nearest);
 
-        let poi = null;
+        let returnedPoi = null;
         if (distance < 3000) {
-            // @ts-ignore
-            const index = lat_lon_mapped.indexOf(nearest);
-            poi = poisList[index];
+            for (const poi of poisList) {
+                // @ts-ignore
+                if (poi.latitude == nearest.latitude && poi.longitude == nearest.longitude) {
+                    returnedPoi = poi;
+                    break;
+                }
+            }
         }
-        
-        return poi;
+
+        return returnedPoi;
     }
 }
 

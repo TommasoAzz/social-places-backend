@@ -12,15 +12,13 @@ class User {
      * @param {Array<Friend>} friends List of friends of the user.
      * @param {Array<LiveEvent>} liveEvents List of live events created by the user.
      * @param {Array<PointOfInterest>} pois List of pois created by the user.
-     * @param {Array<LiveEvent>} expiredliveEvents List of previously created by the user but already expired.
      * @param {Array<FriendRequest>} friendRequests List of received friend requests.
      */
-    constructor(id, friends, liveEvents, pois, expiredliveEvents, friendRequests) {
+    constructor(id, friends, liveEvents, pois, friendRequests) {
         this.id = id;
         this.friends = friends;
         this.liveEvents = liveEvents;
         this.pois = pois;
-        this.expiredliveEvents = expiredliveEvents;
         this.friendRequests = friendRequests;
     }
 }

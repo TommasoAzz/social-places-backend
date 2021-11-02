@@ -19,6 +19,7 @@ class LiveEventService {
             await Persistence.getLiveEventsFromFriends(user)
         ).filter((liveEvent) => liveEvent.expirationDate > currentSeconds);
     }
+
     /**
      * Publishes a new live event.
      * 
@@ -42,6 +43,24 @@ class LiveEventService {
             await Persistence.notifyAddLiveEvent(liveEventToAdd);
         }
         return leId;
+    }
+
+    /**
+     * Removes all expired live events.
+     */
+    static async clearExpiredLiveEvents() {
+        const usersList = await Persistence.getUsersList();
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        for(const user of usersList) {
+            const userLEs = await Persistence.getPersonalLiveEvents(user);
+            
+            for(const le of userLEs) {
+                if(le.expirationDate < currentTimestamp) {
+                    await Persistence.removeLiveEvent(le.id, user);
+                }
+            }
+        }
     }
 }
 

@@ -67,13 +67,6 @@ class Persistence {
     static _poisDoc = 'marker';
 
     /**
-     * The Firestore document corrisponding to the expired live events list of a user.
-     * @type {string}
-     * @readonly
-     */
-    static _expiredLiveEventsDoc = 'timedLiveExpired';
-
-    /**
      * Sets the connection to the Firestore instance.
      * @param {FirebaseFirestore.Firestore} firestoreConnection the connection already established with Firestore.
      */
@@ -126,6 +119,26 @@ class Persistence {
     }
 
     /**
+     * Retrieves all user records available on Firestore.
+     *
+     * @returns {Promise<Array<string>>}all user records available on Firestore.
+     */
+    static async getUsersList() {
+        const users = await this._connection.collection(this._usersDoc).get();
+        let returnedUsers = [];
+        const documents = users.docs;
+        for (let i = 0; i < documents.length; i++) {
+            if (!documents[i].exists) {
+                continue;
+            }
+
+            returnedUsers.push(documents[i].id);
+        }
+
+        return returnedUsers;
+    }
+
+    /**
      * Retrieves a single user record.
      * 
      * @param {string} userId Identifier of the user of which data needs to be retrieved.
@@ -137,7 +150,6 @@ class Persistence {
         const friends = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendsDoc}`).get();
         const liveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._liveEventsDoc}`).get();
         const pointsOfInterest = await this._connection.collection(`${this._usersDoc}/${userId}/${this._poisDoc}`).get();
-        const expiredLiveEvents = await this._connection.collection(`${this._usersDoc}/${userId}/${this._expiredLiveEventsDoc}`).get();
         const friendRequests = await this._connection.collection(`${this._usersDoc}/${userId}/${this._friendRequestsDoc}`).get();
 
         return new User(
@@ -145,7 +157,6 @@ class Persistence {
             friends.empty ? [] : friends.docs.map(friendFromFirestore),
             liveEvents.empty ? [] : liveEvents.docs.map(liveEventFromFirestore),
             pointsOfInterest.empty ? [] : pointsOfInterest.docs.map(pointOfInterestFromFirestore),
-            expiredLiveEvents.empty ? [] : expiredLiveEvents.docs.map(liveEventFromFirestore),
             friendRequests.empty ? [] : friendRequests.docs.map(friendRequestFromFirestore)
         );
     }
@@ -196,6 +207,7 @@ class Persistence {
      * 
      * @param {string} user username of the user in which `friendToAdd` will be added to.
      * @param {string} friendToAdd new friend to add.
+     * @return {Promise<string>} the friend record id.
      */
     static async addFriend(user, friendToAdd) {
         await this.checkIfUserDocumentExists(user);
@@ -291,7 +303,7 @@ class Persistence {
      * Adds a new live event in the list of live events of the live event's owner and in their friends'.
      * 
      * @param {LiveEvent} liveEvent Live event data.
-     * @returns the live event id if added, `null` if the user or their friends have already a live event in their list with the same name or address.
+     * @returns {Promise<string>} the live event id if added, `null` if the user or their friends have already a live event in their list with the same name or address.
      */
     static async addLiveEvent(liveEvent) {
         await this.checkIfUserDocumentExists(liveEvent.owner);
@@ -353,7 +365,6 @@ class Persistence {
     /**
      * 
      * @param {ValidationRequest} placeValidated contains all information of the place validated to be notified
-     * @returns 
      */
     static async notifyValidPlace(placeValidated) {
         await this.checkIfUserDocumentExists(placeValidated.user);
@@ -366,15 +377,12 @@ class Persistence {
 
         const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
         console.info(`Notified user ${placeValidated.user} because ${placeValidated.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
-
     }
 
     /**
       * 
       * @param {PointOfInterest} recommendedPlace contains poi to be notified
       * @param {string} user user that made the request
-
-      * @returns 
       */
     static async notifySuggestionForPlace(recommendedPlace, user) {
         await this.checkIfUserDocumentExists(user);
@@ -395,7 +403,6 @@ class Persistence {
      * 
      * @param {RecommendationAccuracy} recommendationAccuracy contains accuracy and correct sample number
      * @param {string} user user that made the request
-     * @returns 
      */
     static async notifyRetrainedModel(recommendationAccuracy, user) {
         await this.checkIfUserDocumentExists(user);
@@ -410,14 +417,11 @@ class Persistence {
 
     }
 
-
-
-
     /**
      * Returns the list of friends of `user`.
      * 
      * @param {string} user User of which the list of friends must be returned.
-     * @returns A list of `Friend` instances.
+     * @returns {Promise<Array<Friend>>}A list of `Friend` instances.
      */
     static async getFriends(user) {
         await this.checkIfUserDocumentExists(user);
@@ -431,7 +435,7 @@ class Persistence {
      * Returns all live events published by the user's friends.
      * 
      * @param {string} user User of which the list of friends' live events must be returned.
-     * @returns A list of `LiveEvent`.
+     * @returns {Promise<Array<LiveEvent>>} A list of `LiveEvent`.
      */
     static async getLiveEventsFromFriends(user) {
         await this.checkIfUserDocumentExists(user);
@@ -445,7 +449,7 @@ class Persistence {
      * Returns all live events published by the user.
      * 
      * @param {string} user User of which the owned live events must be returned.
-     * @returns A list of `LiveEvent`.
+     * @returns {Promise<Array<LiveEvent>>} A list of `LiveEvent`.
      */
     static async getPersonalLiveEvents(user) {
         await this.checkIfUserDocumentExists(user);
@@ -510,6 +514,25 @@ class Persistence {
         await this._connection.collection(`${this._usersDoc}/${username}/${this._poisDoc}`).doc(poiId).delete();
 
         console.info(`Confirmed point of interest with id=${poiId} removal from ${username}.`);
+    }
+
+    /**
+     * Removes the live event with identifier `leId` from the list of live events owned by `username`.
+     * 
+     * @param {string} leId Identifier of the live event to remove.
+     * @param {string} username username of the user in which the live event should be found.
+     */
+    static async removeLiveEvent(leId, username) {
+        await this.checkIfUserDocumentExists(username);
+
+        const poi = await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).get();
+        if (!poi.exists) {
+            console.error(`The live event with id=${leId} does not exist in the list of user ${username}.`);
+        }
+
+        await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).delete();
+
+        console.info(`Confirmed live event with id=${leId} removal from ${username}.`);
     }
 
     /**

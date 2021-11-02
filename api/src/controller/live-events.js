@@ -57,4 +57,11 @@ router.post('/add', async (req, res) => {
     }
 });
 
-module.exports = router;
+async function cleanExpiredLiveEvents() {
+    await liveEvent.clearExpiredLiveEvents();
+}
+
+module.exports = {
+    liveEvents: router,
+    cleanExpiredLiveEvents
+};
