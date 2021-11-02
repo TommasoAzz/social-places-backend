@@ -64,5 +64,6 @@ https.createServer(options, app).listen(port, () => {
 
 const interval = parseInt(environment.cleanLiveEventsSecondsInterval);
 setInterval(async () => {
+    console.info('Cleaning expired live events (if any)');
     await cleanExpiredLiveEvents();
 }, interval);
