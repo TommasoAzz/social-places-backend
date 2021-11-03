@@ -6,6 +6,7 @@ const app = express();
 
 // Loading environment
 const environment = require('./config/enviroment');
+environment.printConfiguration();
 
 // Firestore initialization
 const serviceAccount = require(environment.firebaseSDK);
