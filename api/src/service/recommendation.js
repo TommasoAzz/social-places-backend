@@ -26,7 +26,7 @@ class RecommendationService {
     }
 
     /**
-     * Checks whether `validationRequest` is correct.
+     * Checks whether `validationRequest` is correct (geofencing client-side).
      * 
      * @param {ValidationRequest} validationRequest the request for validation.
      * @returns {Promise<boolean>} `true` if the suggested category for the place is valid, `false` if not valid, `null` otherwise.
@@ -44,9 +44,7 @@ class RecommendationService {
              */
             const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
 
-            if (isPlaceValid === 1) {
-                await Persistence.notifyValidPlace(validationRequest);
-            }
+            // The notification to the user is handled client-side.
 
             return isPlaceValid === 1;
         } catch (error) {

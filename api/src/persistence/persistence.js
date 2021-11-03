@@ -39,13 +39,6 @@ class Persistence {
     static _friendRequestsDoc = 'friendrequest';
 
     /**
-     * The Firestore document corrisponding to the friendship confirmations received.
-     * @type {string}
-     * @readonly
-     */
-    static _notifyFriendshipConfirmationDoc = 'addedfriend';
-
-    /**
      * The Firestore document corrisponding to the live events created by the friends of a user.
      * @type {string}
      * @readonly
@@ -230,10 +223,6 @@ class Persistence {
     static async notifyAddedFriend(senderOfTheFriendshipRequest, receiverOfTheFriendshipRequest) {
         await this.checkIfUserDocumentExists(senderOfTheFriendshipRequest);
 
-        const friendshipConfirmationReference = await this._connection.collection(`${this._usersDoc}/${senderOfTheFriendshipRequest}/${this._notifyFriendshipConfirmationDoc}`).add({
-            friend: receiverOfTheFriendshipRequest
-        });
-
         const senderDoc = await this._connection.collection(this._usersDoc).doc(senderOfTheFriendshipRequest).get();
 
         /**
@@ -243,9 +232,9 @@ class Persistence {
         const title = 'Frienship request confirmed';
         const body = `You and ${receiverOfTheFriendshipRequest} are now friends!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'friend-request-accepted');
+        const messageId = await createAndSendNotification(pushToken, title, body, 'friend-request-accepted', {friendUsername: receiverOfTheFriendshipRequest});
 
-        console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request, identifier: ${friendshipConfirmationReference.id}. Sent notification, identifier: ${messageId}.`);
+        console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request. Sent notification, identifier: ${messageId}.`);
     }
 
 
@@ -265,11 +254,11 @@ class Persistence {
          */
         const pushToken = receiverDoc.data().notificationToken;
         const title = 'New Friend Request';
-        const body = `${receiverOfTheFriendshipRequest} has just sent you a friend request!`;
+        const body = `${senderOfTheFriendshipRequest} has just sent you a friend request!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'new-friend-request');
+        const messageId = await createAndSendNotification(pushToken, title, body, 'new-friend-request', {friendUsername: senderOfTheFriendshipRequest});
 
-        console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Sent notification, identifier: ${messageId}.`);
+        console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Push token: ${pushToken}. Sent notification, identifier: ${messageId}.`);
     }
 
 
@@ -290,11 +279,6 @@ class Persistence {
 
         const friendIdentifier = friendsOfUser.docs[0].id;
         await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).doc(friendIdentifier).delete();
-        const addedFriend = await this._connection.collection(`${this._usersDoc}/${user}/${this._notifyFriendshipConfirmationDoc}`).where('friend', '==', friendToRemove).get();
-        if (!addedFriend.empty) {
-            const addedFriendIdentifier = addedFriend.docs[0].id;
-            await this._connection.collection(`${this._usersDoc}/${user}/${this._notifyFriendshipConfirmationDoc}`).doc(addedFriendIdentifier).delete();
-        }
 
         console.info(`Confirmed friend removal from ${user} of ${friendToRemove} (now they are not friend anymore).`);
     }
@@ -356,27 +340,13 @@ class Persistence {
             const pushToken = friendDoc.data().notificationToken;
             const title = 'New live event!';
             const body = `${liveEvent.owner} added a new live event!`;
+            
+            const leWithId = liveEvent.toJsObject();
+            leWithId.id = liveEvent.id;
 
-            const messageId = await createAndSendNotification(pushToken, title, body, 'new-live-event');
+            const messageId = await createAndSendNotification(pushToken, title, body, 'new-live-event', leWithId);
             console.info(`Notified user ${friend.friendUsername} because ${liveEvent.owner} added new live event. Sent notification, identifier: ${messageId}.`);
         });
-    }
-
-    /**
-     * 
-     * @param {ValidationRequest} placeValidated contains all information of the place validated to be notified
-     */
-    static async notifyValidPlace(placeValidated) {
-        await this.checkIfUserDocumentExists(placeValidated.user);
-
-        const userDoc = await this._connection.collection(this._usersDoc).doc(placeValidated.user).get();
-
-        const pushToken = userDoc.data().notificationToken;
-        const title = 'Suggestion!';
-        const body = `You may be interested to this ${placeValidated.place_category}. You are near this point`;
-
-        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
-        console.info(`Notified user ${placeValidated.user} because ${placeValidated.place_category} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
     }
 
     /**
@@ -392,10 +362,13 @@ class Persistence {
         const pushToken = userDoc.data().notificationToken;
 
         const title = 'Suggestion!';
-        const body = `You may be interested to this category ${recommendedPlace.type}`;
+        const body = `You may be interested to this place: ${recommendedPlace.name}`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation');
-        console.info(`Notified user ${user} because place: ${recommendedPlace.name}  of type: ${recommendedPlace.type} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
+        const poiWithId = recommendedPlace.toJsObject();
+        poiWithId.markId = recommendedPlace.markId;
+
+        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation', poiWithId);
+        console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
     }
 
@@ -412,7 +385,7 @@ class Persistence {
         const title = 'Model retrained!';
         const body = `Thanks for improving our model, new accuray: ${recommendationAccuracy.accuracy}`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained');
+        const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained', {});
         console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -652,9 +625,10 @@ function friendRequestFromFirestore(document, _, __) {
  * @param {string} title 
  * @param {string} body 
  * @param {string} click_action 
+ * @param {object} content
  * @returns 
  */
-async function createAndSendNotification(pushToken, title, body, click_action) {
+async function createAndSendNotification(pushToken, title, body, click_action, content) {
     const message = {
         notification: {
             title: title,
@@ -665,7 +639,8 @@ async function createAndSendNotification(pushToken, title, body, click_action) {
                 clickAction: click_action
             }
         },
-        token: pushToken
+        token: pushToken,
+        data: content
     };
 
     try {

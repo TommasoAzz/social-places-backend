@@ -39,6 +39,19 @@ class PointOfInterest {
     toString() {
         return `PointOfInterest(markId: ${this.markId}, address: ${this.address}, type: ${this.type}, latitude: ${this.latitude}, longitude: ${this.longitude}, name: ${this.name}, phoneNumber: ${this.phoneNumber}, visibility: ${this.visibility}, url: ${this.url})`;
     }
+
+    toJsObject() {
+        return {
+            address: this.address,
+            type: this.type,
+            latitude: this.latitude,
+            longitude: this.longitude,
+            name: this.name,
+            phoneNumber: this.phoneNumber,
+            visibility: this.visibility,
+            url: this.url
+        };
+    }
 }
 
 module.exports = PointOfInterest;
