@@ -62,8 +62,14 @@ https.createServer(options, app).listen(port, () => {
     console.log('Server started on port ' + port);
 });
 
-const interval = parseInt(environment.cleanLiveEventsSecondsInterval);
-setInterval(async () => {
-    console.info('Cleaning expired live events (if any)');
-    await cleanExpiredLiveEvents();
-}, interval);
+const interval = parseInt(environment.cleanLiveEventsSecondsInterval) * 1000;
+// One-shot clean on startup + interval
+function cleanLiveEvents() {
+    console.info('Cleaning expired live events (if any)...');
+    cleanExpiredLiveEvents().then(() => {
+        console.info('...cleaned!');
+    });
+    
+    return cleanLiveEvents;
+}
+setInterval(cleanLiveEvents(), interval);

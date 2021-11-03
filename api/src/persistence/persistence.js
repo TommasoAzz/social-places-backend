@@ -522,17 +522,36 @@ class Persistence {
      * @param {string} leId Identifier of the live event to remove.
      * @param {string} username username of the user in which the live event should be found.
      */
-    static async removeLiveEvent(leId, username) {
+    static async removePersonalLiveEvent(leId, username) {
         await this.checkIfUserDocumentExists(username);
 
-        const poi = await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).get();
-        if (!poi.exists) {
+        const le = await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).get();
+        if (!le.exists) {
             console.error(`The live event with id=${leId} does not exist in the list of user ${username}.`);
         }
 
         await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).delete();
 
         console.info(`Confirmed live event with id=${leId} removal from ${username}.`);
+    }
+
+    /**
+     * Removes the live event with identifier `leId` from the list of live events owned by friends of `username`.
+     * 
+     * @param {string} leId Identifier of the live event to remove.
+     * @param {string} username username of the user in which the live event should be found.
+     */
+    static async removeFriendsLiveEvent(leId, username) {
+        await this.checkIfUserDocumentExists(username);
+
+        const le = await this._connection.collection(`${this._usersDoc}/${username}/${this._liveEventsDoc}`).doc(leId).get();
+        if (!le.exists) {
+            console.error(`The live event with id=${leId} does not exist in the list of live events of friends of ${username}.`);
+        }
+
+        await this._connection.collection(`${this._usersDoc}/${username}/${this._liveEventsDoc}`).doc(leId).delete();
+
+        console.info(`Confirmed live event with id=${leId} removal from the list of live events of friends of ${username}.`);
     }
 
     /**

@@ -57,7 +57,15 @@ class LiveEventService {
             
             for(const le of userLEs) {
                 if(le.expirationDate < currentTimestamp) {
-                    await Persistence.removeLiveEvent(le.id, user);
+                    await Persistence.removePersonalLiveEvent(le.id, user);
+                }
+            }
+
+            const lesOfFriends = await Persistence.getLiveEventsFromFriends(user);
+
+            for(const le of lesOfFriends) {
+                if(le.expirationDate < currentTimestamp) {
+                    await Persistence.removeFriendsLiveEvent(le.id, user);
                 }
             }
         }
