@@ -35,7 +35,7 @@ const options = {
 };
 
 // Routes configuration
-const { friends, liveEvents, pointsOfInterest, recommendation, notification } = require('./controller');
+const { friends, liveEvents, pointsOfInterest, recommendation, notification, cleanExpiredLiveEvents } = require('./controller');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -57,7 +57,13 @@ app.use('/recommendation', recommendation);
 app.use('/notification', notification);
 
 // Server setup
-const port = environment.serverPort;
+const port = parseInt(environment.serverPort);
 https.createServer(options, app).listen(port, () => {
     console.log('Server started on port ' + port);
 });
+
+const interval = parseInt(environment.cleanLiveEventsSecondsInterval);
+setInterval(async () => {
+    console.info('Cleaning expired live events (if any)');
+    await cleanExpiredLiveEvents();
+}, interval);
