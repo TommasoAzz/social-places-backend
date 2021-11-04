@@ -629,6 +629,9 @@ function friendRequestFromFirestore(document, _, __) {
  * @returns 
  */
 async function createAndSendNotification(pushToken, title, body, click_action, content) {
+    const stringifiedContent = JSON.parse(
+        JSON.stringify(content, (k, v) => v && typeof v === 'object' ? v : '' + v)
+    );
     const message = {
         notification: {
             title: title,
@@ -640,7 +643,7 @@ async function createAndSendNotification(pushToken, title, body, click_action, c
             }
         },
         token: pushToken,
-        data: content
+        data: stringifiedContent
     };
 
     try {
