@@ -34,8 +34,11 @@ class FriendService {
         const receiver = await Persistence.getUser(friendshipRequest.receiver);
         
         // eslint-disable-next-line no-unused-vars
-        if(receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0) {
-            // No friendship with the receiver user therefore a friend request can be sent.
+        if(
+            receiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipRequest.sender).length == 0 &&
+            receiver.friendRequests.filter((otherUser, _, __) => otherUser.origin == friendshipRequest.sender).length == 0    
+        ) {
+            // No friendship with the receiver user and no friendship request was sent to that same user, hence the request can be sent.
             await Persistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
             await Persistence.notifyFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
         }
@@ -55,7 +58,7 @@ class FriendService {
         const currentReceiver = await Persistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
         
         // eslint-disable-next-line no-unused-vars
-        if(currentReceiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.senderOfTheFriendshipRequest).length == 0) {
+        if(currentReceiver.friends.filter((friend, _, __) => friend.friendUsername == friendshipConfirmation.receiverOfTheFriendshipRequest).length == 0) {
             // The receiver of friendship requests add the person who requested it.
             await Persistence.addFriend(friendshipConfirmation.receiverOfTheFriendshipRequest, friendshipConfirmation.senderOfTheFriendshipRequest);
             // The request of the friendship adds the person who received the request.
