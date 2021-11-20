@@ -354,8 +354,9 @@ class Persistence {
       * @param {PointOfInterest} recommendedPlace contains poi to be notified
       * @param {string} user user that made the request
       * @param {string} message body of the notification
+      * @param {string} click_action action to be handled client-side
       */
-    static async notifySuggestionForPlace(recommendedPlace, user, message) {
+    static async notifySuggestionForPlace(recommendedPlace, user, message,click_action) {
         await this.checkIfUserDocumentExists(user);
 
         var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
@@ -368,7 +369,7 @@ class Persistence {
         const poiWithId = recommendedPlace.toJsObject();
         poiWithId.markId = recommendedPlace.markId;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'place-recommendation', poiWithId);
+        const messageId = await createAndSendNotification(pushToken, title, body, click_action, poiWithId);
         console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
 
     }

@@ -59,7 +59,7 @@ class RecommendationService {
 
                 const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
                 if (suggestPointOfInterest !== null) {
-                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:');
+                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
                 }
             }
             return isPlaceValid === 1;
@@ -90,7 +90,7 @@ class RecommendationService {
             const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
-                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:');
+                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
             }
 
             return recommendedCategory;
