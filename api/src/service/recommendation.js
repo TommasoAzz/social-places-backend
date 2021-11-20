@@ -112,18 +112,18 @@ class RecommendationService {
 
     /**
      * Asks for the current model to be trained again with the new given record `recommendationRequest`.
-     * @param {RecommendationRequest} recommendationRequest the new data for the model to be trained.
+     * @param {ValidationRequest} validationRequest the new data for the model to be trained.
      * @returns {Promise<RecommendationAccuracy>} the new accuracy of the model.
      */
-    static async trainAgainModel(recommendationRequest) {
+    static async trainAgainModel(validationRequest) {
         try {
-            const train_result = await superagent.post(this._api_url + 'train').send(recommendationRequest);
+            const train_result = await superagent.post(this._api_url + 'train').send(validationRequest.toJsObject());
 
             const body = train_result.body;
 
             const recommendationAccuracy = new RecommendationAccuracy(body.accuracy, body.correct_samples);
 
-            await Persistence.notifyRetrainedModel(recommendationAccuracy, recommendationRequest.user);
+            await Persistence.notifyRetrainedModel(recommendationAccuracy, validationRequest.user);
 
             return recommendationAccuracy;
         } catch (error) {

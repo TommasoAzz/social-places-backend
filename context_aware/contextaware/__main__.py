@@ -80,13 +80,13 @@ def train_again_model():
     Train again the model, given the same data the method recommend_places would receive, plus the
     expected output. Returns the new accuracy.
     """
-    # Arguments
-    latitude = request.args.get('latitude')
-    longitude = request.args.get('longitude')
-    human_activity = request.args.get('human_activity')
-    seconds_in_day = request.args.get('seconds_in_day')
-    week_day = request.args.get('week_day')
-    place_category = request.args.get('place_category')
+    # Json body
+    latitude = float(request.json.get('latitude'))
+    longitude = float(request.json.get('longitude'))
+    human_activity = request.json.get('human_activity').lower()
+    seconds_in_day = int(request.json.get('seconds_in_day'))
+    week_day = int(request.json.get('week_day'))
+    place_category = request.json.get('place_category').lower()
     
     # New record creation
     new_record = pd.DataFrame(columns=[

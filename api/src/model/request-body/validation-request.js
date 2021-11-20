@@ -30,6 +30,17 @@ class ValidationRequest {
         this.week_day = week_day;
         this.place_category = place_category;
     }
+    toJsObject() {
+        return {
+            user: this.user,
+            latitude: this.latitude,
+            longitude: this.longitude,
+            human_activity: this.human_activity,
+            seconds_in_day: this.seconds_in_day,
+            week_day: this.week_day,
+            place_category: this.place_category
+        };
+    }
 }
 
 module.exports = ValidationRequest;
