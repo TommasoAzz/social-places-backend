@@ -44,8 +44,24 @@ class RecommendationService {
              */
             const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
 
-            // The notification to the user is handled client-side.
+            if (isPlaceValid === 1){
+                
+                const recommendedCategory = new RecommendedCategory(validationRequest.place_category);
 
+                const recommendationRequest = new RecommendationRequest(
+                    validationRequest.user,
+                    validationRequest.latitude,
+                    validationRequest.longitude,
+                    validationRequest.human_activity,
+                    validationRequest.seconds_in_day,
+                    validationRequest.week_day
+                );
+
+                const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
+                if (suggestPointOfInterest !== null) {
+                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:');
+                }
+            }
             return isPlaceValid === 1;
         } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
@@ -69,15 +85,15 @@ class RecommendationService {
             const response = await superagent.get(this._api_url + 'places').query(recommendationRequest);
 
             const body = response.body;
-            const recommendedPlace = new RecommendedCategory(body.place_category);
+            const recommendedCategory = new RecommendedCategory(body.place_category);
 
-            const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedPlace, recommendationRequest);
+            const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
-                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user);
+                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:');
             }
 
-            return recommendedPlace;
+            return recommendedCategory;
         } catch (error) {
             console.error('The HTTP call to the context aware APIs returned the following error:' + error);
 

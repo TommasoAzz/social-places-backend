@@ -353,8 +353,9 @@ class Persistence {
       * 
       * @param {PointOfInterest} recommendedPlace contains poi to be notified
       * @param {string} user user that made the request
+      * @param {string} message body of the notification
       */
-    static async notifySuggestionForPlace(recommendedPlace, user) {
+    static async notifySuggestionForPlace(recommendedPlace, user, message) {
         await this.checkIfUserDocumentExists(user);
 
         var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
@@ -362,7 +363,7 @@ class Persistence {
         const pushToken = userDoc.data().notificationToken;
 
         const title = 'Suggestion!';
-        const body = `You may be interested to this place: ${recommendedPlace.name}`;
+        const body = `${message} ${recommendedPlace.name}`;
 
         const poiWithId = recommendedPlace.toJsObject();
         poiWithId.markId = recommendedPlace.markId;
