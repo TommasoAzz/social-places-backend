@@ -43,9 +43,8 @@ class RecommendationService {
              * @type number
              */
             const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
-
+            
             if (isPlaceValid === 1){
-                
                 const recommendedCategory = new RecommendedCategory(validationRequest.place_category);
 
                 const recommendationRequest = new RecommendationRequest(
@@ -57,7 +56,8 @@ class RecommendationService {
                     validationRequest.week_day
                 );
 
-                const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
+                const suggestPointOfInterest = await this.getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest);
+                
                 if (suggestPointOfInterest !== null) {
                     await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
                 }
@@ -148,7 +148,54 @@ class RecommendationService {
             return null;
         }
     }
+    /**
+     * 
+     * @param {RecommendedCategory} recommendedCategory contains place_category to be notified
+     * @param {RecommendationRequest} recommendationRequest name of user that made the request
+     * @returns {Promise<PointOfInterest>}
+     */
+    static async getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest) {
+        const user = recommendationRequest.user;
+        await Persistence.checkIfUserDocumentExists(user);
 
+        /**
+         * @type Array<PointOfInterest>
+         */
+        let poisList = [];
+
+        poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
+
+        const lat_lon_mapped = poisList
+            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase())
+            // eslint-disable-next-line no-unused-vars
+            .map((poi, _, __) => {
+                return {
+                    latitude: poi.latitude,
+                    longitude: poi.longitude
+                };
+            });
+        const userPosition = {
+            latitude: recommendationRequest.latitude,
+            longitude: recommendationRequest.longitude
+        };
+
+        const nearest = geolib.findNearest(userPosition, lat_lon_mapped);
+
+        const distance = geolib.getDistance(userPosition, nearest);
+
+        let returnedPoi = null;
+        if (distance < 3000) {
+            for (const poi of poisList) {
+                // @ts-ignore
+                if (poi.latitude == nearest.latitude && poi.longitude == nearest.longitude) {
+                    returnedPoi = poi;
+                    break;
+                }
+            }
+        }
+
+        return returnedPoi;
+    }
     /**
      * 
      * @param {RecommendedCategory} recommendedCategory contains place_category to be notified

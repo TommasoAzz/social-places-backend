@@ -370,7 +370,7 @@ class Persistence {
         poiWithId.markId = recommendedPlace.markId;
 
         const messageId = await createAndSendNotification(pushToken, title, body, click_action, poiWithId);
-        console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user. Sent notification, identifier: ${messageId}.`);
+        console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user for ${click_action}. Sent notification, identifier: ${messageId}.`);
 
     }
 

@@ -65,11 +65,10 @@ def should_advise_place_category():
     """
      # Create new record from request
     new_record = create_record(request)
-    place_category = request.args.get('place_category')
+    place_category = request.args.get('place_category').lower()
 
     # Prediction
     predicted_place_cat = classifier.predict(new_record)
-
     result = {"result":int(place_category == predicted_place_cat)}
     return result, 200
 
