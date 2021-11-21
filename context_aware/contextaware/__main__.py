@@ -11,7 +11,7 @@ classifier = ActivityClassifier()
 def create_record(req: request) -> pd.DataFrame:
     latitude = req.args.get('latitude')
     longitude = req.args.get('longitude')
-    human_activity = req.args.get('human_activity')
+    human_activity = req.args.get('human_activity').lower()
     seconds_in_day = req.args.get('seconds_in_day')
     week_day = req.args.get('week_day')
     

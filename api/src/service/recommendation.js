@@ -161,9 +161,7 @@ class RecommendationService {
         /**
          * @type Array<PointOfInterest>
          */
-        let poisList = [];
-
-        poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
+        let poisList = await Persistence.getPOIsOfUser(user);
 
         const lat_lon_mapped = poisList
             .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase())
