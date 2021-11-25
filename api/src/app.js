@@ -35,6 +35,10 @@ const options = {
     cert: fs.readFileSync(environment.certificateCert)
 };
 
+
+// Getting private and public key
+const privateKey = fs.readFileSync(environment.privateKey, 'utf8');
+
 // Routes configuration
 const { friends, liveEvents, pointsOfInterest, recommendation, notification, cleanExpiredLiveEvents } = require('./controller');
 
@@ -54,6 +58,7 @@ app.use('/live-events', liveEvents);
 app.use('/points-of-interest', pointsOfInterest);
 
 app.use('/recommendation', recommendation);
+recommendation.setPrivateKey(privateKey);
 
 app.use('/notification', notification);
 

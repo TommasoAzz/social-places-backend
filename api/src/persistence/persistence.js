@@ -10,7 +10,9 @@ const AddPointOfInterestPoi = require('../model/request-body/add-point-of-intere
 const ValidationRequest = require('../model/request-body/validation-request');
 const RecommendationAccuracy = require('../model/recommendation-accuracy');
 const RecommendedPlace = require('../model/recommended-category');
-
+const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 class Persistence {
     /**
      * @type {FirebaseFirestore.Firestore}
@@ -66,6 +68,8 @@ class Persistence {
     static set connection(firestoreConnection) {
         this._connection = firestoreConnection;
     }
+
+    
 
     /**
      * Creates a user document if it does not exist in the persistence manager.
@@ -152,6 +156,24 @@ class Persistence {
             pointsOfInterest.empty ? [] : pointsOfInterest.docs.map(pointOfInterestFromFirestore),
             friendRequests.empty ? [] : friendRequests.docs.map(friendRequestFromFirestore)
         );
+    }
+
+    /**
+     * Retrieves a single user record.
+     * 
+     * @param {string} userId Identifier of the user of which data needs to be retrieved.
+     * @returns {Promise<string>} The public key of user from firebase
+     */
+    static async getPublicKeyOfUser(userId) {
+        await this.checkIfUserDocumentExists(userId);
+        const userDoc = await this._connection.collection(this._usersDoc).doc(userId).get();
+
+        /**
+         * @type {string}
+         */
+        const publicKey = userDoc.data().publicKey;
+
+        return publicKey;
     }
 
     /**
@@ -369,7 +391,7 @@ class Persistence {
         const poiWithId = recommendedPlace.toJsObject();
         poiWithId.markId = recommendedPlace.markId;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, click_action, poiWithId);
+        const messageId = await createAndSendNotification(pushToken, title, body, click_action, poiWithId, user);
         console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user for ${click_action}. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -387,7 +409,7 @@ class Persistence {
         const title = 'Model retrained!';
         const body = `Thanks for improving our model, new accuray: ${recommendationAccuracy.accuracy}`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained', {});
+        const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained', {}, user);
         console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
 
     }
@@ -542,6 +564,19 @@ class Persistence {
 
         console.info(`Confirmed writing of notification token for user ${username} at ${writeTime.writeTime.toDate().toLocaleDateString()}.`);
     }
+
+    /**
+     * Sets the connection to the Firestore instance.
+     *@param {string} username name of the user
+     * @param {string} key of the user
+     */
+    static async updatePublicKey(username,key) {
+        await this.createUserDocumentIfDoesNotExist(username);
+
+        const writeTime = await this._connection.collection(this._usersDoc).doc(username).set({ publicKey: key });
+
+        console.info(`Confirmed writing of publicKey for user ${username} at ${writeTime.writeTime.toDate().toLocaleDateString()}.`);
+    }
 }
 
 module.exports = Persistence;
@@ -628,12 +663,19 @@ function friendRequestFromFirestore(document, _, __) {
  * @param {string} body 
  * @param {string} click_action 
  * @param {object} content
+ * @param {string} user
  * @returns 
  */
-async function createAndSendNotification(pushToken, title, body, click_action, content) {
-    const stringifiedContent = JSON.parse(
+async function createAndSendNotification(pushToken, title, body, click_action, content, user='') {
+    var stringifiedContent = JSON.parse(
         JSON.stringify(content, (k, v) => v && typeof v === 'object' ? v : '' + v)
     );
+
+    if(user != '' && click_action.includes('recommendation')){
+        const userPublicKey = await Persistence.getPublicKeyOfUser(user);
+        stringifiedContent = encryptStringWithRsaPublicKey(stringifiedContent, userPublicKey);
+    }
+
     const message = {
         notification: {
             title: title,
@@ -656,4 +698,18 @@ async function createAndSendNotification(pushToken, title, body, click_action, c
         return null;
     }
 }
+
+/**
+     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+     * 
+     * @param {string} toEncrypt Message to encrypt
+     * @param {string} userPublicKey User public key from firebase
+     * @returns {string} The decrypted body
+*/
+function encryptStringWithRsaPublicKey(toEncrypt,userPublicKey) {
+    var buffer = Buffer.from(toEncrypt);
+    var encrypted = crypto.publicEncrypt(userPublicKey, buffer);
+    return encrypted.toString('base64');
+}
+
 

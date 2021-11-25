@@ -1,38 +1,42 @@
 let express = require('express');
 let router = express.Router();
 
+const crypto = require('crypto');
+
+var privateKey = '';
+/**
+     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+     * 
+     * @param {string} privateKeyFromApp Server privatekey
+     */
+function setPrivateKey(privateKeyFromApp) {
+    privateKey = privateKeyFromApp;
+}
+
+/**
+     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+     * 
+     * @param {string} toDecrypt Message encrypted
+     * @returns {string} The decrypted body
+     */
+
+
+function decryptStringWithRsaPrivateKey(toDecrypt) {
+    var buffer = Buffer.from(toDecrypt, 'base64');
+    var decrypted = crypto.privateDecrypt(privateKey, buffer);
+    return decrypted.toString('utf8');
+}
+
 const recommendation = require('../service/recommendation');
 const auth = require('../service/auth');
 const APIError = require('../model/api-error');
 const RecommendationRequest = require('../model/request-body/recommendation-request');
 const ValidationRequest = require('../model/request-body/validation-request');
 
-router.get('/accuracy', async (req, res) => {
-    const query = req.query;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != query.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${query.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
-        return;
-    }
-
-    const result = await recommendation.computeModelAccuracy(user);
-
-    if(result !== null) {
-        res.status(200).json(result).send();
-    } else {
-        res.status(400).send();
-    }
-});
 
 router.post('/places', async (req, res) => {
-    const body = req.body;
+    const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
+    const body = JSON.parse(decryptedBody);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
@@ -65,7 +69,8 @@ router.post('/places', async (req, res) => {
 });
 
 router.post('/validity', async (req, res) => {
-    const body = req.body;
+    const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
+    const body = JSON.parse(decryptedBody);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
@@ -100,7 +105,8 @@ router.post('/validity', async (req, res) => {
 
 
 router.post('/train', async (req, res) => {
-    const body = req.body;
+    const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
+    const body = JSON.parse(decryptedBody);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
@@ -129,4 +135,8 @@ router.post('/train', async (req, res) => {
     res.status(200).send();
 });
 
-module.exports = router;
+module.exports = {
+    router:router,
+    setPrivateKey:setPrivateKey
+
+};

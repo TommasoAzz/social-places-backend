@@ -39,6 +39,15 @@ class AuthService {
     static async updatePushNotificationToken(username, token) {
         await Persistence.updatePushNotificationToken(username, token);
     }
+    /**
+     * Updates the notification token for user `username`.
+     * 
+     * @param {string} username username of the user of which the publicKey should be saved.
+     * @param {string} publicKey The publicKey of the user username.
+     */
+    static async updatePublicKey(username, publicKey) {
+        await Persistence.updatePublicKey(username,publicKey);
+    }
 }
 
 module.exports = AuthService;

@@ -55,7 +55,6 @@ class RecommendationService {
                     validationRequest.seconds_in_day,
                     validationRequest.week_day
                 );
-
                 const suggestPointOfInterest = await this.getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest);
                 
                 if (suggestPointOfInterest !== null) {
@@ -101,30 +100,6 @@ class RecommendationService {
         }
     }
 
-
-
-    /**
-     * Asks for the current model accuracy.
-     * 
-     * @param {string} user to be notified.
-     * @returns {Promise<RecommendationAccuracy>} the new accuracy of the model.
-     */
-    static async computeModelAccuracy(user) {
-        try {
-            const accuracy_result = await superagent.get(this._api_url + 'accuracy');
-
-            const body = accuracy_result.body;
-            const recommendationAccuracy = new RecommendationAccuracy(body.accuracy, body.correct_samples);
-
-            await Persistence.notifyRetrainedModel(recommendationAccuracy, user);
-
-            return recommendationAccuracy;
-        } catch (error) {
-            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
-
-            return null;
-        }
-    }
 
     /**
      * Asks for the current model to be trained again with the new given record `recommendationRequest`.
