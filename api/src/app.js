@@ -37,9 +37,8 @@ const options = {
 
 
 // Getting private and public key
-var privateKey = fs.readFileSync(environment.privateKey, 'utf8');
-privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----','');
-privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----','');
+const privateKey = fs.readFileSync(environment.privateKey, 'utf8').replace('-----BEGIN RSA PRIVATE KEY-----', '').replace('-----END RSA PRIVATE KEY-----', '').trim();
+
 // Routes configuration
 const { friends, liveEvents, pointsOfInterest, recommendation, notification, cleanExpiredLiveEvents } = require('./controller');
 
@@ -58,7 +57,7 @@ app.use('/live-events', liveEvents);
 
 app.use('/points-of-interest', pointsOfInterest);
 
-app.use('/recommendation', recommendation);
+app.use('/recommendation', recommendation.router);
 recommendation.setPrivateKey(privateKey);
 
 app.use('/notification', notification);

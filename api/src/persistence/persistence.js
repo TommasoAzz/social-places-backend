@@ -69,7 +69,7 @@ class Persistence {
         this._connection = firestoreConnection;
     }
 
-    
+
 
     /**
      * Creates a user document if it does not exist in the persistence manager.
@@ -254,7 +254,7 @@ class Persistence {
         const title = 'Frienship request confirmed';
         const body = `You and ${receiverOfTheFriendshipRequest} are now friends!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'friend-request-accepted', {friendUsername: receiverOfTheFriendshipRequest});
+        const messageId = await createAndSendNotification(pushToken, title, body, 'friend-request-accepted', { friendUsername: receiverOfTheFriendshipRequest });
 
         console.info(`Notified user ${senderOfTheFriendshipRequest} because ${receiverOfTheFriendshipRequest} confirmed the friendship request. Sent notification, identifier: ${messageId}.`);
     }
@@ -278,7 +278,7 @@ class Persistence {
         const title = 'New Friend Request';
         const body = `${senderOfTheFriendshipRequest} has just sent you a friend request!`;
 
-        const messageId = await createAndSendNotification(pushToken, title, body, 'new-friend-request', {friendUsername: senderOfTheFriendshipRequest});
+        const messageId = await createAndSendNotification(pushToken, title, body, 'new-friend-request', { friendUsername: senderOfTheFriendshipRequest });
 
         console.info(`Notified user ${receiverOfTheFriendshipRequest} because ${senderOfTheFriendshipRequest} sent the friendship request. Push token: ${pushToken}. Sent notification, identifier: ${messageId}.`);
     }
@@ -362,7 +362,7 @@ class Persistence {
             const pushToken = friendDoc.data().notificationToken;
             const title = 'New live event!';
             const body = `${liveEvent.owner} added a new live event!`;
-            
+
             const leWithId = liveEvent.toJsObject();
             leWithId.id = liveEvent.id;
 
@@ -378,7 +378,7 @@ class Persistence {
       * @param {string} message body of the notification
       * @param {string} click_action action to be handled client-side
       */
-    static async notifySuggestionForPlace(recommendedPlace, user, message,click_action) {
+    static async notifySuggestionForPlace(recommendedPlace, user, message, click_action) {
         await this.checkIfUserDocumentExists(user);
 
         var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
@@ -570,7 +570,7 @@ class Persistence {
      *@param {string} username name of the user
      * @param {string} key of the user
      */
-    static async updatePublicKey(username,key) {
+    static async updatePublicKey(username, key) {
         await this.createUserDocumentIfDoesNotExist(username);
 
         const writeTime = await this._connection.collection(this._usersDoc).doc(username).set({ publicKey: key });
@@ -666,12 +666,12 @@ function friendRequestFromFirestore(document, _, __) {
  * @param {string} user
  * @returns 
  */
-async function createAndSendNotification(pushToken, title, body, click_action, content, user='') {
+async function createAndSendNotification(pushToken, title, body, click_action, content, user = '') {
     var stringifiedContent = JSON.parse(
         JSON.stringify(content, (k, v) => v && typeof v === 'object' ? v : '' + v)
     );
 
-    if(user != '' && click_action.includes('recommendation')){
+    if (user != '' && click_action.includes('recommendation')) {
         const userPublicKey = await Persistence.getPublicKeyOfUser(user);
         stringifiedContent = encryptStringWithRsaPublicKey(stringifiedContent, userPublicKey);
     }
@@ -693,20 +693,20 @@ async function createAndSendNotification(pushToken, title, body, click_action, c
     try {
         const messageId = await FirebaseCloudMessaging.send(message);
         return messageId;
-    } catch(error) {
+    } catch (error) {
         console.error(error);
         return null;
     }
 }
 
 /**
-     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
-     * 
-     * @param {string} toEncrypt Message to encrypt
-     * @param {string} userPublicKey User public key from firebase
-     * @returns {string} The decrypted body
+ * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+ * 
+ * @param {string} toEncrypt Message to encrypt
+ * @param {string} userPublicKey User public key from firebase
+ * @returns {string} The decrypted body
 */
-function encryptStringWithRsaPublicKey(toEncrypt,userPublicKey) {
+function encryptStringWithRsaPublicKey(toEncrypt, userPublicKey) {
     var buffer = Buffer.from(toEncrypt);
     var encrypted = crypto.publicEncrypt(userPublicKey, buffer);
     return encrypted.toString('base64');

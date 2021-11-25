@@ -1,38 +1,33 @@
 let express = require('express');
 let router = express.Router();
-
-const crypto = require('crypto');
-
-var privateKey = '';
-/**
-     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
-     * 
-     * @param {string} privateKeyFromApp Server privatekey
-     */
-function setPrivateKey(privateKeyFromApp) {
-    privateKey = privateKeyFromApp;
-}
-
-/**
-     * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
-     * 
-     * @param {string} toDecrypt Message encrypted
-     * @returns {string} The decrypted body
-     */
-
-
-function decryptStringWithRsaPrivateKey(toDecrypt) {
-    var buffer = Buffer.from(toDecrypt, 'base64');
-    var decrypted = crypto.privateDecrypt(privateKey, buffer);
-    return decrypted.toString('utf8');
-}
-
 const recommendation = require('../service/recommendation');
 const auth = require('../service/auth');
 const APIError = require('../model/api-error');
 const RecommendationRequest = require('../model/request-body/recommendation-request');
 const ValidationRequest = require('../model/request-body/validation-request');
+const crypto = require('crypto');
 
+var privateKey = '';
+/**
+ * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+ * 
+ * @param {string} privateKeyFromApp Server privatekey
+ */
+function setPrivateKey(privateKeyFromApp) {
+    privateKey = privateKeyFromApp;
+}
+
+/**
+ * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+ * 
+ * @param {string} toDecrypt Message encrypted
+ * @returns {string} The decrypted body
+ */
+function decryptStringWithRsaPrivateKey(toDecrypt) {
+    var buffer = Buffer.from(toDecrypt, 'base64');
+    var decrypted = crypto.privateDecrypt(privateKey, buffer);
+    return decrypted.toString('utf8');
+}
 
 router.post('/places', async (req, res) => {
     const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
@@ -136,7 +131,6 @@ router.post('/train', async (req, res) => {
 });
 
 module.exports = {
-    router:router,
-    setPrivateKey:setPrivateKey
-
+    router: router,
+    setPrivateKey: setPrivateKey
 };

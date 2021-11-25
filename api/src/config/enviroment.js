@@ -10,6 +10,8 @@ const certificateCert = process.env.CERTIFICATE_CERT === undefined ? '' : proces
 const serverPort = process.env.SERVER_PORT === undefined ? '3000' : process.env.SERVER_PORT;
 const contextAwareServerUrl = process.env.CONTEXT_AWARE_SERVER_URL === undefined ? 'http://localhost:4000/' : process.env.CONTEXT_AWARE_SERVER_URL;
 const cleanLiveEventsSecondsInterval = process.env.CLEAN_LIVE_EVENTS_SECONDS_INTERVAL === undefined ? '10800' : process.env.CLEAN_LIVE_EVENTS_SECONDS_INTERVAL;
+const publicKey = process.env.PUBLIC_KEY === undefined ? '' : process.env.PUBLIC_KEY;
+const privateKey = process.env.PRIVATE_KEY === undefined ? '' : process.env.PRIVATE_KEY;
 
 function printConfiguration() {
     console.info('Firebase SDK file: ' + firebaseSDK);
@@ -19,6 +21,8 @@ function printConfiguration() {
     console.info('HTTPS Server port: ' + serverPort);
     console.info('Context-Aware Server URL: ' + contextAwareServerUrl);
     console.info('Clean live events interval (seconds): ' + cleanLiveEventsSecondsInterval);
+    console.info('RSA Public Key: ' + publicKey);
+    console.info('RSA Private Key: ' + privateKey);
 }
 
 const index = {
@@ -29,7 +33,9 @@ const index = {
     certificateCert,
     serverPort,
     contextAwareServerUrl,
-    cleanLiveEventsSecondsInterval
+    cleanLiveEventsSecondsInterval,
+    publicKey,
+    privateKey
 };
 
 module.exports = index;
