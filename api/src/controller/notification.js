@@ -25,7 +25,7 @@ router.post('/token', async (req, res) => {
 });
 
 
-router.post('/publicKey', async (req, res) => {
+router.post('/publickey', async (req, res) => {
     const body = req.body;
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
