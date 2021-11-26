@@ -14,35 +14,33 @@ firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount),
     databaseURL: environment.firebaseURL
 });
-const firestore = firebaseAdmin.firestore();
-const auth = firebaseAdmin.auth();
 
 // Persistence manager initialization
 const Persistence = require('./persistence/persistence');
-Persistence.connection = firestore;
+Persistence.connection = firebaseAdmin.firestore();
 
 // Authentication manager 
 const Authentication = require('./persistence/authentication');
-Authentication.connection = auth;
+Authentication.connection = firebaseAdmin.auth();
 
 // Context Aware Server
 const RecommendationService = require('./service/recommendation');
 RecommendationService.api_url = environment.contextAwareServerUrl;
 
-// HTTPS initialization
-const options = {
-    key: fs.readFileSync(environment.certificateKey),
-    cert: fs.readFileSync(environment.certificateCert)
-};
+// Routes loading
+const { friends, liveEvents, pointsOfInterest, recommendation, setRecommendationPrivateKey, notification, cleanExpiredLiveEvents } = require('./controller');
 
+// RSA private key
+const privateKey = fs.readFileSync(
+    environment.privateKey, 
+    'utf8'
+);
 
-// Getting private and public key
-const privateKey = fs.readFileSync(environment.privateKey, 'utf8').replace('-----BEGIN RSA PRIVATE KEY-----', '').replace('-----END RSA PRIVATE KEY-----', '').trim();
+setRecommendationPrivateKey(privateKey);
 
 // Routes configuration
-const { friends, liveEvents, pointsOfInterest, recommendation, notification, cleanExpiredLiveEvents } = require('./controller');
-
 app.use(express.json());
+app.use(express.text());
 app.use(express.urlencoded({ extended: false }));
 
 // Interceptor: all requests pass through here and then get forwarded to their true handler.
@@ -57,10 +55,15 @@ app.use('/live-events', liveEvents);
 
 app.use('/points-of-interest', pointsOfInterest);
 
-app.use('/recommendation', recommendation.router);
-recommendation.setPrivateKey(privateKey);
+app.use('/recommendation', recommendation);
 
 app.use('/notification', notification);
+
+// HTTPS initialization
+const options = {
+    key: fs.readFileSync(environment.certificateKey),
+    cert: fs.readFileSync(environment.certificateCert)
+};
 
 // Server setup
 const port = parseInt(environment.serverPort);

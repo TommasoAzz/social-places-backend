@@ -13,6 +13,7 @@ const RecommendedPlace = require('../model/recommended-category');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+
 class Persistence {
     /**
      * @type {FirebaseFirestore.Firestore}
@@ -159,10 +160,10 @@ class Persistence {
     }
 
     /**
-     * Retrieves a single user record.
+     * Retrieves the public key of the user with the username given as argument.
      * 
-     * @param {string} userId Identifier of the user of which data needs to be retrieved.
-     * @returns {Promise<string>} The public key of user from firebase
+     * @param {string} userId Identifier of the user of which the public key needs to be retrieved.
+     * @returns {Promise<string>} The public key of the user from Firebase
      */
     static async getPublicKeyOfUser(userId) {
         await this.checkIfUserDocumentExists(userId);
@@ -357,7 +358,7 @@ class Persistence {
         const friends = await this.getFriends(liveEvent.owner);
 
         friends.forEach(async (friend) => {
-            var friendDoc = await this._connection.collection(this._usersDoc).doc(friend.friendUsername).get();
+            const friendDoc = await this._connection.collection(this._usersDoc).doc(friend.friendUsername).get();
 
             const pushToken = friendDoc.data().notificationToken;
             const title = 'New live event!';
@@ -381,7 +382,7 @@ class Persistence {
     static async notifySuggestionForPlace(recommendedPlace, user, message, click_action) {
         await this.checkIfUserDocumentExists(user);
 
-        var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
+        const userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
 
         const pushToken = userDoc.data().notificationToken;
 
@@ -393,7 +394,6 @@ class Persistence {
 
         const messageId = await createAndSendNotification(pushToken, title, body, click_action, poiWithId, user);
         console.info(`Notified user ${user} because place: ${recommendedPlace.name} of type: ${recommendedPlace.type} has to be suggested to the user for ${click_action}. Sent notification, identifier: ${messageId}.`);
-
     }
 
     /**
@@ -403,7 +403,7 @@ class Persistence {
      */
     static async notifyRetrainedModel(recommendationAccuracy, user) {
         await this.checkIfUserDocumentExists(user);
-        var userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
+        const userDoc = await this._connection.collection(this._usersDoc).doc(user).get();
         const pushToken = userDoc.data().notificationToken;
 
         const title = 'Model retrained!';
@@ -560,7 +560,7 @@ class Persistence {
     static async updatePushNotificationToken(username, token) {
         await this.createUserDocumentIfDoesNotExist(username);
 
-        const writeTime = await this._connection.collection(this._usersDoc).doc(username).set({ notificationToken: token });
+        const writeTime = await this._connection.collection(this._usersDoc).doc(username).update({ notificationToken: token });
 
         console.info(`Confirmed writing of notification token for user ${username} at ${writeTime.writeTime.toDate().toLocaleDateString()}.`);
     }
@@ -573,7 +573,7 @@ class Persistence {
     static async updatePublicKey(username, key) {
         await this.createUserDocumentIfDoesNotExist(username);
 
-        const writeTime = await this._connection.collection(this._usersDoc).doc(username).set({ publicKey: key });
+        const writeTime = await this._connection.collection(this._usersDoc).doc(username).update({ publicKey: key });
 
         console.info(`Confirmed writing of publicKey for user ${username} at ${writeTime.writeTime.toDate().toLocaleDateString()}.`);
     }
@@ -657,23 +657,30 @@ function friendRequestFromFirestore(document, _, __) {
 }
 
 /**
+ * Generates a push notification and sends it to the user with the given pushToken.
  * 
- * @param {string} pushToken 
- * @param {string} title 
- * @param {string} body 
- * @param {string} click_action 
- * @param {object} content
- * @param {string} user
- * @returns 
+ * @param {string} pushToken token owned by only one user that allows to receive push notifications in their device
+ * @param {string} title title of the notification to display
+ * @param {string} body body of the notification to display
+ * @param {string} click_action the action to perform in the application
+ * @param {object} content the actual data contained in the notification (if click_action is a recommendation then the body gets encrypted)
+ * @param {string} user the user of which requesting the public key to encrypt the messages to send them
+ * @returns the sent notification id or `null` if something went wrong
  */
 async function createAndSendNotification(pushToken, title, body, click_action, content, user = '') {
-    var stringifiedContent = JSON.parse(
-        JSON.stringify(content, (k, v) => v && typeof v === 'object' ? v : '' + v)
+    let stringifiedContent = JSON.parse(
+        JSON.stringify(content, (_, v) => v && typeof v === 'object' ? v : '' + v)
     );
 
     if (user != '' && click_action.includes('recommendation')) {
         const userPublicKey = await Persistence.getPublicKeyOfUser(user);
-        stringifiedContent = encryptStringWithRsaPublicKey(stringifiedContent, userPublicKey);
+        console.log('CONTENT TO SEND: ');
+        console.log(stringifiedContent);
+        console.log('PUBLIC KEY OF USER: ' + userPublicKey);
+        stringifiedContent = {
+            encrypted: encryptStringWithRsaPublicKey(JSON.stringify(stringifiedContent), userPublicKey)
+        };
+        console.log(stringifiedContent.encrypted);
     }
 
     const message = {
@@ -707,8 +714,11 @@ async function createAndSendNotification(pushToken, title, body, click_action, c
  * @returns {string} The decrypted body
 */
 function encryptStringWithRsaPublicKey(toEncrypt, userPublicKey) {
-    var buffer = Buffer.from(toEncrypt);
-    var encrypted = crypto.publicEncrypt(userPublicKey, buffer);
+    const buffer = Buffer.from(toEncrypt);
+    const encrypted = crypto.publicEncrypt({
+        key: userPublicKey,
+        padding: crypto.constants.RSA_PKCS1_PADDING
+    }, buffer);
     return encrypted.toString('base64');
 }
 

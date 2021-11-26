@@ -8,7 +8,8 @@ const index = {
     friends,
     liveEvents,
     pointsOfInterest,
-    recommendation,
+    recommendation: recommendation.router,
+    setRecommendationPrivateKey: recommendation.setPrivateKey,
     notification,
     cleanExpiredLiveEvents
 };

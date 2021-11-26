@@ -7,9 +7,10 @@ const RecommendationRequest = require('../model/request-body/recommendation-requ
 const ValidationRequest = require('../model/request-body/validation-request');
 const crypto = require('crypto');
 
-var privateKey = '';
+let privateKey = '';
+
 /**
- * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+ * Sets the private key to use it for decrypting messages received by the clients.
  * 
  * @param {string} privateKeyFromApp Server privatekey
  */
@@ -18,20 +19,24 @@ function setPrivateKey(privateKeyFromApp) {
 }
 
 /**
- * Given data from {query} returns the recommended place category and sends a notification to the user with a place of that category.
+ * Given a ciphertext returns the decrypted message.
  * 
- * @param {string} toDecrypt Message encrypted
- * @returns {string} The decrypted body
+ * @param {string} ciphertext the encrypted message
+ * @returns {string} The decrypted message
  */
-function decryptStringWithRsaPrivateKey(toDecrypt) {
-    var buffer = Buffer.from(toDecrypt, 'base64');
-    var decrypted = crypto.privateDecrypt(privateKey, buffer);
+function decryptStringWithRsaPrivateKey(ciphertext) {
+    const buffer = Buffer.from(ciphertext, 'base64');
+    const decrypted = crypto.privateDecrypt({
+        key: privateKey,
+        padding: crypto.constants.RSA_PKCS1_PADDING
+    }, buffer);
     return decrypted.toString('utf8');
 }
 
 router.post('/places', async (req, res) => {
     const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
     const body = JSON.parse(decryptedBody);
+    console.log(`DECRYPTED BODY: ${body}`);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
@@ -66,6 +71,7 @@ router.post('/places', async (req, res) => {
 router.post('/validity', async (req, res) => {
     const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
     const body = JSON.parse(decryptedBody);
+    console.log(`DECRYPTED BODY: ${body}`);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
