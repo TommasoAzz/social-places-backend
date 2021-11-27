@@ -10,6 +10,8 @@ const RecommendedCategory = require('../model/recommended-category');
 const Persistence = require('../persistence/persistence');
 // eslint-disable-next-line no-unused-vars
 const PointOfInterest = require('../model/point-of-interest');
+const RecommendedPoi = require('../model/recommended-poi');
+const AddRecommendedPoi = require('../model/request-body/add-recommended-poi');
 
 class RecommendationService {
     /**
@@ -23,6 +25,27 @@ class RecommendationService {
      */
     static set api_url(apiUrl) {
         this._api_url = apiUrl + 'recommendation/';
+    }
+
+
+    /**
+         * Publishes a new live event.
+         * 
+         * @param {AddRecommendedPoi} recommendedPoi the new recommended Poi.
+         * @returns the live event id.
+         */
+    static async addRecommendedPoi(recommendedPoi)  {
+        if(!(recommendedPoi instanceof AddRecommendedPoi)) {
+            console.error(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
+            throw new TypeError(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
+        }
+
+        const recommendedPoiToAdd = RecommendedPoi.fromRecommendedPoi(recommendedPoi);
+        
+        const rpId = await Persistence.addPersonalRecommededPoi(recommendedPoiToAdd);
+
+        console.log(rpId);
+        return rpId;
     }
 
     /**
@@ -58,7 +81,16 @@ class RecommendationService {
                 const suggestPointOfInterest = await this.getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest);
                 
                 if (suggestPointOfInterest !== null) {
-                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
+                    const canNotify = this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
+                
+                    //poi can be notified so adding it to firebase
+                    if(canNotify){
+                        await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
+                        
+                        const notificationDate = Math.floor(Date.now() / 1000);
+                        const addRecommendPoi = AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
+                        await this.addRecommendedPoi(addRecommendPoi);
+                    }
                 }
             }
             return isPlaceValid === 1;
@@ -89,7 +121,17 @@ class RecommendationService {
             const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
-                await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
+                const canNotify = this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
+                
+                //poi can be notified so adding it to firebase
+                if(canNotify){
+                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
+                    
+                    const notificationDate = Math.floor(Date.now() / 1000);
+                    const addRecommendPoi = AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
+                    await this.addRecommendedPoi(addRecommendPoi);
+                }
+                
             }
 
             return recommendedCategory;
@@ -225,6 +267,51 @@ class RecommendationService {
 
         return returnedPoi;
     }
+
+    /**
+    * Removes all expired live events.
+    */
+    static async cleanExpiredRecommendedPoi() {
+        const usersList = await Persistence.getUsersList();
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const oneHouerTimeStamp = 3600;
+        for(const user of usersList) {
+            const recommededPois = await Persistence.getPersonalRecommededPoi(user);
+            
+            for(const rp of recommededPois) {
+                if(rp.notificationDate + oneHouerTimeStamp < currentTimestamp) {
+                    await Persistence.removePersonalRecommededPoi(rp.id, user);
+                }
+            }
+
+        }
+    }
+    /**
+     * 
+     * @param {PointOfInterest} poi PointOfIntereset that the server want to suggest
+     * @param {string} user username of the user that has to check if the poi could be recommended 
+     * @returns {Boolean}
+     */
+    static async canNotifyPoi(poi, user){
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const oneHouerTimeStamp = 3600;
+
+        const recommededPois = await Persistence.getPersonalRecommededPoi(user);
+        const rp = recommededPois.filter((recommendedPoi) => recommendedPoi.markId === poi.markId);
+
+        if(rp.length == 0){
+            return true;
+        }
+
+        if(rp[0].notificationDate + oneHouerTimeStamp < currentTimestamp) {
+            await Persistence.removePersonalRecommededPoi(rp[0].id, user);
+            return true;
+        }
+
+        return false;
+    }
+
 }
 
 module.exports = RecommendationService;

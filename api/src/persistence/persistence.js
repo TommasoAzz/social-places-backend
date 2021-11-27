@@ -4,6 +4,7 @@ const FirebaseCloudMessaging = require('firebase-admin').messaging();
 const Friend = require('../model/friend');
 const User = require('../model/user');
 const LiveEvent = require('../model/live-event');
+const RecommendedPoi = require('../model/recommended-poi');
 const PointOfInterest = require('../model/point-of-interest');
 const FriendRequest = require('../model/friend-request');
 const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
@@ -54,6 +55,13 @@ class Persistence {
      * @readonly
      */
     static _personalLiveEventsDoc = 'living';
+    
+    /**
+     * The Firestore document corrisponding to the recommended poi notified to the user.
+     * @type {string}
+     * @readonly
+     */
+      static _personalRecommendedPoiDoc = 'recommended';
 
     /**
      * The Firestore document corrisponding to the point of interests list of a user.
@@ -456,6 +464,40 @@ class Persistence {
         return liveEvents.docs.map(liveEventFromFirestore);
     }
 
+
+    /**
+     * 
+     * @param {RecommendedPoi} rp The recommended poi that has to be added to firebase
+     * @param {string} user The username of the user that is receiving the notification for poi
+     * @returns {string} the id of the recommended poi added.
+     */
+
+    static async addPersonalRecommededPoi(rp,user){
+        await this.checkIfUserDocumentExists(user);
+
+        const personalRecommendedPoiReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).add(rp.toJsObject());
+
+        console.info(`Added Recommended poi for user ${user}, identifier: ${personalRecommendedPoiReference.id}.`);
+
+        return personalRecommendedPoiReference.id;
+        
+    }
+
+    /**
+     * 
+     * @param {string} user User which the owned recommended poi must be returned 
+     * @returns {Promise<Array<RecommendedPoi>>} A list of `LiveEvent`.
+     */
+
+    static async getPersonalRecommededPoi(user){
+        await this.checkIfUserDocumentExists(user);
+
+        const recommendedPoi = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).get();
+
+        return recommendedPoi.docs.map(recommendedPoiFromFirestore);
+        
+    }
+
     /**
      * Returns the points of interest of the user given as argument.
      * 
@@ -530,6 +572,24 @@ class Persistence {
         await this._connection.collection(`${this._usersDoc}/${username}/${this._personalLiveEventsDoc}`).doc(leId).delete();
 
         console.info(`Confirmed live event with id=${leId} removal from ${username}.`);
+    }
+    /**
+     * Removes the recommended poi with identifier `recommendedId` from the list of recommended poi owned by `username`.
+     * 
+     * @param {string} recommendedId Identifier of the recommended poi to remove.
+     * @param {string} username username of the user in which the recommended poi should be found.
+    */
+    static async removePersonalRecommededPoi(recommendedId, username) {
+        await this.checkIfUserDocumentExists(username);
+
+        const rp = await this._connection.collection(`${this._usersDoc}/${username}/${this._personalRecommendedPoiDoc}`).doc(recommendedId).get();
+        if (!rp.exists) {
+            console.error(`The recommended poi with id=${recommendedId} does not exist in the list of user ${username}.`);
+        }
+
+        await this._connection.collection(`${this._usersDoc}/${username}/${this._personalRecommendedPoiDoc}`).doc(recommendedId).delete();
+
+        console.info(`Confirmed recommended poi with id=${recommendedId} removal from ${username}.`);
     }
 
     /**
@@ -614,6 +674,24 @@ function liveEventFromFirestore(document, _, __) {
         document.data().name,
         document.data().owner,
         parseInt(document.data().expirationDate)
+    );
+}
+
+/**
+ * Converts data of a recommended poi to an instance of class `RecommendedPoi`.
+ * 
+ * @param {FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>} document the data from Firestore.
+ * @returns a `RecommendedPoi` instance with data retrieved from `document`
+ */
+function recommendedPoiFromFirestore(document, _, __) {
+    if (!document.exists) {
+        return null;
+    }
+
+    return new RecommendedPoi(
+        document.id,
+        document.data().markId,
+        parseInt(document.data().notificatedDate)
     );
 }
 

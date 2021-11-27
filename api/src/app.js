@@ -28,7 +28,7 @@ const RecommendationService = require('./service/recommendation');
 RecommendationService.api_url = environment.contextAwareServerUrl;
 
 // Routes loading
-const { friends, liveEvents, pointsOfInterest, recommendation, setRecommendationPrivateKey, notification, cleanExpiredLiveEvents } = require('./controller');
+const { friends, liveEvents, pointsOfInterest, recommendation, setRecommendationPrivateKey, notification, cleanExpiredLiveEvents, cleanExpiredRecommendedPoi } = require('./controller');
 
 // RSA private key
 const privateKey = fs.readFileSync(
@@ -71,7 +71,7 @@ https.createServer(options, app).listen(port, () => {
     console.log('Server started on port ' + port);
 });
 
-const interval = parseInt(environment.cleanLiveEventsSecondsInterval) * 1000;
+const intervalCleanLiveEvents = parseInt(environment.cleanLiveEventsSecondsInterval) * 1000;
 // One-shot clean on startup + interval
 function cleanLiveEvents() {
     console.info('Cleaning expired live events (if any)...');
@@ -81,4 +81,16 @@ function cleanLiveEvents() {
     
     return cleanLiveEvents;
 }
-setInterval(cleanLiveEvents(), interval);
+setInterval(cleanLiveEvents(), intervalCleanLiveEvents);
+
+const intervalCleanRecommendationPoi = parseInt(environment.cleanRecommendationNotificationSecondsInterval) * 1000;
+// One-shot clean on startup + interval
+function cleanRecommendedPoi() {
+    console.info('Cleaning old recommended poi (if any)...');
+    cleanExpiredRecommendedPoi().then(() => {
+        console.info('...cleaned!');
+    });
+    
+    return cleanLiveEvents;
+}
+setInterval(cleanRecommendedPoi(), intervalCleanRecommendationPoi);

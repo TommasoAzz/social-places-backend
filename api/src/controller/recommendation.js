@@ -136,7 +136,12 @@ router.post('/train', async (req, res) => {
     res.status(200).send();
 });
 
+async function cleanExpiredRecommendedPoi() {
+    await recommendation.cleanExpiredRecommendedPoi();
+}
+
 module.exports = {
     router: router,
-    setPrivateKey: setPrivateKey
+    setPrivateKey: setPrivateKey,
+    cleanExpiredRecommendedPoi
 };
