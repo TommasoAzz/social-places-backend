@@ -209,7 +209,7 @@ class Persistence {
         const friendRequestReference = await this._connection.collection(`${this._usersDoc}/${receiver}/${this._friendRequestsDoc}`).where('origin', '==', sender).get();
         if (friendRequestReference.empty) {
             console.error(`User ${sender} did not send a friendship request to ${receiver}.`);
-            return;
+            throw `You did not receive any friendship request from ${sender}`;
         }
 
         const friendRequestIdentifier = friendRequestReference.docs[0].id;
@@ -297,7 +297,7 @@ class Persistence {
         const friendsOfUser = await this._connection.collection(`${this._usersDoc}/${user}/${this._friendsDoc}`).where('friend', '==', friendToRemove).get();
         if (friendsOfUser.empty) {
             console.error(`${friendToRemove} is not friend of ${user} therefore no removal happened.`);
-            return;
+            throw `You are not friends with ${friendToRemove}.`;
         }
 
         const friendIdentifier = friendsOfUser.docs[0].id;
