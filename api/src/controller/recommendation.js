@@ -141,7 +141,7 @@ async function cleanExpiredRecommendedPoi() {
 }
 
 module.exports = {
-    router: router,
-    setPrivateKey: setPrivateKey,
+    recommendation: router,
+    setPrivateKey,
     cleanExpiredRecommendedPoi
 };

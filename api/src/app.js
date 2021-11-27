@@ -28,7 +28,7 @@ const RecommendationService = require('./service/recommendation');
 RecommendationService.api_url = environment.contextAwareServerUrl;
 
 // Routes loading
-const { friends, liveEvents, pointsOfInterest, recommendation, setRecommendationPrivateKey, notification, cleanExpiredLiveEvents, cleanExpiredRecommendedPoi } = require('./controller');
+const { friends, liveEvents, pointsOfInterest, recommendation, setPrivateKey, notification, cleanExpiredLiveEvents, cleanExpiredRecommendedPoi } = require('./controller');
 
 // RSA private key
 const privateKey = fs.readFileSync(
@@ -36,7 +36,7 @@ const privateKey = fs.readFileSync(
     'utf8'
 );
 
-setRecommendationPrivateKey(privateKey);
+setPrivateKey(privateKey);
 
 // Routes configuration
 app.use(express.json());
@@ -76,7 +76,7 @@ const intervalCleanLiveEvents = parseInt(environment.cleanLiveEventsSecondsInter
 function cleanLiveEvents() {
     console.info('Cleaning expired live events (if any)...');
     cleanExpiredLiveEvents().then(() => {
-        console.info('...cleaned!');
+        console.info('...cleaned expired live events!');
     });
     
     return cleanLiveEvents;
@@ -88,7 +88,7 @@ const intervalCleanRecommendationPoi = parseInt(environment.cleanRecommendationN
 function cleanRecommendedPoi() {
     console.info('Cleaning old recommended poi (if any)...');
     cleanExpiredRecommendedPoi().then(() => {
-        console.info('...cleaned!');
+        console.info('...cleaned old recommended poi!');
     });
     
     return cleanLiveEvents;
