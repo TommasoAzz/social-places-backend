@@ -41,6 +41,8 @@ class FriendService {
             // No friendship with the receiver user and no friendship request was sent to that same user, hence the request can be sent.
             await Persistence.addFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
             await Persistence.notifyFriendRequest(friendshipRequest.sender, friendshipRequest.receiver);
+        } else {
+            throw 'You are either already friends with this person or you have already sent him a friend request.';
         }
     }
 
@@ -67,6 +69,8 @@ class FriendService {
             await Persistence.removeFriendRequest(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
             // The new friend is added to the list of friends added by the sender of the friendship request in order to receive a notification.
             await Persistence.notifyAddedFriend(friendshipConfirmation.senderOfTheFriendshipRequest, friendshipConfirmation.receiverOfTheFriendshipRequest);
+        } else {
+            throw 'You are already friends with this person!';
         }
     }
 

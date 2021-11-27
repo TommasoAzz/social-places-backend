@@ -44,9 +44,20 @@ router.post('/add', async (req, res) => {
     }
 
     let addFriendshipRequest = new AddFriendshipRequest(body.receiver, body.sender);
-    await friendService.sendAddFriendshipRequest(addFriendshipRequest);
-
-    res.status(200).send();
+    try {
+        await friendService.sendAddFriendshipRequest(addFriendshipRequest);
+        res.status(200).send();
+    } catch(e) {
+        console.log('A');
+        res = res.status(400);
+        console.log('B');
+        if(typeof(e) === 'string') {
+            console.log('C');
+            res = res.json(APIError.build(e));
+        }
+        res.send();
+        console.log('D');
+    }
 });
 
 router.post('/confirm', async (req, res) => {
@@ -66,9 +77,17 @@ router.post('/confirm', async (req, res) => {
     }
 
     let addFriendshipConfirmation = new AddFriendshipConfirmation(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
-    await friendService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
-
-    res.status(200).send();
+    
+    try {
+        await friendService.sendAddFriendshipConfirmation(addFriendshipConfirmation);
+        res.status(200).send();
+    } catch(e) {
+        res = res.status(400);
+        if(typeof(e) === 'string') {
+            res = res.json(APIError.build(e));
+        }
+        res.send();
+    }
 });
 
 router.post('/deny', async (req, res) => {
@@ -87,9 +106,17 @@ router.post('/deny', async (req, res) => {
         return;
     }
     let denyFriendshipConfirmation = new AddFriendshipDenial(body.receiverOfTheFriendshipRequest, body.senderOfTheFriendshipRequest);
-    await friendService.sendAddFriendshipDenial(denyFriendshipConfirmation);
-
-    res.status(200).send();
+    
+    try {
+        await friendService.sendAddFriendshipDenial(denyFriendshipConfirmation);
+        res.status(200).send();
+    } catch(e) {
+        res = res.status(400);
+        if(typeof(e) === 'string') {
+            res = res.json(APIError.build(e));
+        }
+        res.send();
+    }
 });
 
 router.delete('/remove', async (req, res) => {
@@ -109,9 +136,16 @@ router.delete('/remove', async (req, res) => {
 
     let removeFriendshipRequest = new RemoveFriendshipRequest(body.receiver, body.sender);
 
-    await friendService.sendRemoveFriendshipRequest(removeFriendshipRequest);
-
-    res.status(200).send();
+    try {
+        await friendService.sendRemoveFriendshipRequest(removeFriendshipRequest);
+        res.status(200).send();
+    } catch(e) {
+        res = res.status(400);
+        if(typeof(e) === 'string') {
+            res = res.json(APIError.build(e));
+        }
+        res.send();
+    }
 });
 
 module.exports = router;
