@@ -28,7 +28,7 @@ const RecommendationService = require('./service/recommendation');
 RecommendationService.api_url = environment.contextAwareServerUrl;
 
 // Routes loading
-const { friends, liveEvents, pointsOfInterest, recommendation, setPrivateKey, notification, cleanExpiredLiveEvents, cleanExpiredRecommendedPoi } = require('./controller');
+const { friends, liveEvents, pointsOfInterest, recommendation, setPrivateKey, userData, cleanExpiredLiveEvents, cleanExpiredRecommendedPoi } = require('./controller');
 
 // RSA private key
 const privateKey = fs.readFileSync(
@@ -57,7 +57,7 @@ app.use('/points-of-interest', pointsOfInterest);
 
 app.use('/recommendation', recommendation);
 
-app.use('/notification', notification);
+app.use('/user-data', userData);
 
 // HTTPS initialization
 const options = {

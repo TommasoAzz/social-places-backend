@@ -4,7 +4,7 @@ let router = express.Router();
 const auth = require('../service/auth');
 const APIError = require('../model/api-error');
 
-router.post('/token', async (req, res) => {
+router.post('/notification-token', async (req, res) => {
     const body = req.body;
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
@@ -25,7 +25,7 @@ router.post('/token', async (req, res) => {
 });
 
 
-router.post('/publickey', async (req, res) => {
+router.post('/public-key', async (req, res) => {
     const body = req.body;
     const token = auth.parseHeaders(req.headers);
     if(token === null) {

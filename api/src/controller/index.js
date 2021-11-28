@@ -3,7 +3,7 @@ const {liveEvents, cleanExpiredLiveEvents} = require('./live-events');
 const pointsOfInterest = require('./points-of-interest');
 const {recommendation, setPrivateKey, cleanExpiredRecommendedPoi} = require('./recommendation');
 
-const notification = require('./notification');
+const userData = require('./user-data');
 
 const index = {
     friends,
@@ -11,7 +11,7 @@ const index = {
     pointsOfInterest,
     recommendation,
     setPrivateKey,
-    notification,
+    userData,
     cleanExpiredLiveEvents,
     cleanExpiredRecommendedPoi
 };
