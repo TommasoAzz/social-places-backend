@@ -32,7 +32,7 @@ const { friends, liveEvents, pointsOfInterest, recommendation, setPrivateKey, us
 
 // RSA private key
 const privateKey = fs.readFileSync(
-    environment.privateKey, 
+    environment.recommendationPrivateKey, 
     'utf8'
 );
 

@@ -10,9 +10,9 @@ const certificateCert = process.env.CERTIFICATE_CERT === undefined ? '' : proces
 const serverPort = process.env.SERVER_PORT === undefined ? '3000' : process.env.SERVER_PORT;
 const contextAwareServerUrl = process.env.CONTEXT_AWARE_SERVER_URL === undefined ? 'http://localhost:4000/' : process.env.CONTEXT_AWARE_SERVER_URL;
 const cleanLiveEventsSecondsInterval = process.env.CLEAN_LIVE_EVENTS_SECONDS_INTERVAL === undefined ? '10800' : process.env.CLEAN_LIVE_EVENTS_SECONDS_INTERVAL;
-const cleanRecommendationNotificationSecondsInterval = process.env.CLEAN_RECOMMENTADION_NOTIFICATION_SECONDS_INTERVAL === undefined ? '3600' : process.env.CLEAN_RECOMMENTADION_NOTIFICATION_SECONDS_INTERVAL;
-const publicKey = process.env.PUBLIC_KEY === undefined ? '' : process.env.PUBLIC_KEY;
-const privateKey = process.env.PRIVATE_KEY === undefined ? '' : process.env.PRIVATE_KEY;
+const cleanRecommendationNotificationSecondsInterval = process.env.CLEAN_RECOMMENDATION_NOTIFICATION_SECONDS_INTERVAL === undefined ? '3600' : process.env.CLEAN_RECOMMENDATION_NOTIFICATION_SECONDS_INTERVAL;
+const recommendationPublicKey = process.env.PUBLIC_KEY === undefined ? '' : process.env.PUBLIC_KEY;
+const recommendationPrivateKey = process.env.PRIVATE_KEY === undefined ? '' : process.env.PRIVATE_KEY;
 
 function printConfiguration() {
     console.info('Firebase SDK file: ' + firebaseSDK);
@@ -23,8 +23,8 @@ function printConfiguration() {
     console.info('Context-Aware Server URL: ' + contextAwareServerUrl);
     console.info('Clean live events interval (seconds): ' + cleanLiveEventsSecondsInterval);
     console.info('Clean recommendated poi interval (seconds): ' + cleanRecommendationNotificationSecondsInterval);
-    console.info('RSA Public Key: ' + publicKey);
-    console.info('RSA Private Key: ' + privateKey);
+    console.info('Recommendation RSA Public Key: ' + recommendationPublicKey);
+    console.info('RecommendationRSA Private Key: ' + recommendationPrivateKey);
 }
 
 const index = {
@@ -37,8 +37,8 @@ const index = {
     contextAwareServerUrl,
     cleanLiveEventsSecondsInterval,
     cleanRecommendationNotificationSecondsInterval,
-    publicKey,
-    privateKey
+    recommendationPublicKey,
+    recommendationPrivateKey
 };
 
 module.exports = index;
