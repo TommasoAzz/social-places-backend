@@ -469,12 +469,16 @@ class Persistence {
      * 
      * @param {RecommendedPoi} rp The recommended poi that has to be added to firebase
      * @param {string} user The username of the user that is receiving the notification for poi
-     * @returns {string} the id of the recommended poi added.
+     * @returns {Promise<string>} the id of the recommended poi added.
      */
 
     static async addPersonalRecommededPoi(rp,user){
         await this.checkIfUserDocumentExists(user);
 
+        const existingPoi = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).where('markId', '==', rp.markId).get();
+        if(!existingPoi.empty){
+            return null;
+        }
         const personalRecommendedPoiReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).add(rp.toJsObject());
 
         console.info(`Added Recommended poi for user ${user}, identifier: ${personalRecommendedPoiReference.id}.`);
@@ -752,13 +756,9 @@ async function createAndSendNotification(pushToken, title, body, click_action, c
 
     if (user != '' && click_action.includes('recommendation')) {
         const userPublicKey = await Persistence.getPublicKeyOfUser(user);
-        console.log('CONTENT TO SEND: ');
-        console.log(stringifiedContent);
-        console.log('PUBLIC KEY OF USER: ' + userPublicKey);
         stringifiedContent = {
             encrypted: encryptStringWithRsaPublicKey(JSON.stringify(stringifiedContent), userPublicKey)
         };
-        console.log(stringifiedContent.encrypted);
     }
 
     const message = {

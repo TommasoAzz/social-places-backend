@@ -7,11 +7,11 @@ class AddRecommendedPoi {
      * @param {string} markId recommended poi Identifier.
      * @param {number} notificatedDate Notification date in seconds
      */
-    constructor(markId, notificationDate) {
-        validatePrimitiveType(notificationDate, 'number');
+    constructor(markId, notificatedDate) {
+        validatePrimitiveType(notificatedDate, 'number');
 
         this.markId = markId;
-        this.notificationDate = notificationDate;
+        this.notificatedDate = notificatedDate;
     }
 }
 

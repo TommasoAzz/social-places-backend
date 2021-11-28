@@ -36,7 +36,6 @@ function decryptStringWithRsaPrivateKey(ciphertext) {
 router.post('/places', async (req, res) => {
     const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
     const body = JSON.parse(decryptedBody);
-    console.log(`DECRYPTED BODY: ${body}`);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');
@@ -71,7 +70,6 @@ router.post('/places', async (req, res) => {
 router.post('/validity', async (req, res) => {
     const decryptedBody = decryptStringWithRsaPrivateKey(req.body);
     const body = JSON.parse(decryptedBody);
-    console.log(`DECRYPTED BODY: ${body}`);
     const token = auth.parseHeaders(req.headers);
     if(token === null) {
         console.error('> Status code 401 - Token not available.');

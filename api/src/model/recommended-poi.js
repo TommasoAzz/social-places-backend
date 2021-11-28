@@ -31,7 +31,7 @@ class RecommendedPoi {
         return new RecommendedPoi(
             '',
             addRecommendedPoi.markId,
-            addRecommendedPoi.notificationDate
+            addRecommendedPoi.notificatedDate
         );
     }
 
@@ -44,7 +44,7 @@ class RecommendedPoi {
         return {
             id: this.id,
             markId: this.markId,
-            notificationDate: this.notificationDate,
+            notificatedDate: this.notificatedDate,
         };
     }
 }

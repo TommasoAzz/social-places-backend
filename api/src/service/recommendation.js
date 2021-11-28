@@ -32,9 +32,10 @@ class RecommendationService {
          * Publishes a new live event.
          * 
          * @param {AddRecommendedPoi} recommendedPoi the new recommended Poi.
+         * @param {string} user the user that the personal recommended poi should be added.
          * @returns the live event id.
          */
-    static async addRecommendedPoi(recommendedPoi)  {
+    static async addRecommendedPoi(recommendedPoi,user)  {
         if(!(recommendedPoi instanceof AddRecommendedPoi)) {
             console.error(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
             throw new TypeError(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
@@ -42,9 +43,8 @@ class RecommendationService {
 
         const recommendedPoiToAdd = RecommendedPoi.fromRecommendedPoi(recommendedPoi);
         
-        const rpId = await Persistence.addPersonalRecommededPoi(recommendedPoiToAdd);
+        const rpId = await Persistence.addPersonalRecommededPoi(recommendedPoiToAdd,user);
 
-        console.log(rpId);
         return rpId;
     }
 
@@ -81,21 +81,21 @@ class RecommendationService {
                 const suggestPointOfInterest = await this.getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest);
                 
                 if (suggestPointOfInterest !== null) {
-                    const canNotify = this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
-                
+                    const canNotify = await this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
+
                     //poi can be notified so adding it to firebase
                     if(canNotify){
                         await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
                         
                         const notificationDate = Math.floor(Date.now() / 1000);
-                        const addRecommendPoi = AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
-                        await this.addRecommendedPoi(addRecommendPoi);
+                        const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
+                        await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
                     }
                 }
             }
             return isPlaceValid === 1;
         } catch (error) {
-            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+            console.error('The HTTP call to the context aware APIs validity returned the following error:' + error);
 
             return null;
         }
@@ -121,22 +121,21 @@ class RecommendationService {
             const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
-                const canNotify = this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
-                
+                const canNotify = await this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
                 //poi can be notified so adding it to firebase
                 if(canNotify){
                     await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
                     
                     const notificationDate = Math.floor(Date.now() / 1000);
-                    const addRecommendPoi = AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
-                    await this.addRecommendedPoi(addRecommendPoi);
+                    const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
+                    await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
                 }
                 
             }
 
             return recommendedCategory;
         } catch (error) {
-            console.error('The HTTP call to the context aware APIs returned the following error:' + error);
+            console.error('The HTTP call to the context aware APIs places returned the following error:' + error);
 
             return null;
         }
@@ -280,7 +279,7 @@ class RecommendationService {
             const recommededPois = await Persistence.getPersonalRecommededPoi(user);
             
             for(const rp of recommededPois) {
-                if(rp.notificationDate + oneHouerTimeStamp < currentTimestamp) {
+                if(rp.notificatedDate + oneHouerTimeStamp < currentTimestamp) {
                     await Persistence.removePersonalRecommededPoi(rp.id, user);
                 }
             }
@@ -291,7 +290,7 @@ class RecommendationService {
      * 
      * @param {PointOfInterest} poi PointOfIntereset that the server want to suggest
      * @param {string} user username of the user that has to check if the poi could be recommended 
-     * @returns {Boolean}
+     * @returns {Promise<boolean>}
      */
     static async canNotifyPoi(poi, user){
         const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -299,16 +298,16 @@ class RecommendationService {
 
         const recommededPois = await Persistence.getPersonalRecommededPoi(user);
         const rp = recommededPois.filter((recommendedPoi) => recommendedPoi.markId === poi.markId);
-
+        
         if(rp.length == 0){
             return true;
         }
-
-        if(rp[0].notificationDate + oneHouerTimeStamp < currentTimestamp) {
+        
+        if(rp[0].notificatedDate + oneHouerTimeStamp < currentTimestamp) {
             await Persistence.removePersonalRecommededPoi(rp[0].id, user);
             return true;
         }
-
+        
         return false;
     }
 
