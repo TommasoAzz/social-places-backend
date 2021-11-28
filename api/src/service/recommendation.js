@@ -122,10 +122,10 @@ class RecommendationService {
 
             if (suggestPointOfInterest !== null) {
                 const canNotify = await this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
-                //poi can be notified so adding it to firebase
+                
+                //in this case the poi should always notified thanks to getNearestPoiOfGivenCategory
                 if(canNotify){
                     await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
-                    
                     const notificationDate = Math.floor(Date.now() / 1000);
                     const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
                     await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
@@ -235,8 +235,10 @@ class RecommendationService {
         }
         poisList = poisList.concat(await Persistence.getPOIsOfUser(user));
 
+        
+        const alreadyRecommendedPoi = await Persistence.getPersonalRecommededPoi(user);
         const lat_lon_mapped = poisList
-            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase())
+            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase() && alreadyRecommendedPoi.findIndex((rp)=>rp.markId === poi.markId) === -1)
             // eslint-disable-next-line no-unused-vars
             .map((poi, _, __) => {
                 return {
@@ -263,7 +265,6 @@ class RecommendationService {
                 }
             }
         }
-
         return returnedPoi;
     }
 
@@ -276,6 +277,7 @@ class RecommendationService {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const oneHouerTimeStamp = 3600;
         for(const user of usersList) {
+
             const recommededPois = await Persistence.getPersonalRecommededPoi(user);
             
             for(const rp of recommededPois) {
