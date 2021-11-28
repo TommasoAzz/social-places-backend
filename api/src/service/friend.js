@@ -30,6 +30,10 @@ class FriendService {
             console.error(`Argument friendshipRequest instantiated with ${friendshipRequest} is not of type AddFriendshipRequest.`);
             throw new TypeError(`Argument friendshipRequest instantiated with ${friendshipRequest} is not of type AddFriendshipRequest.`);
         }
+
+        if(friendshipRequest.receiver === friendshipRequest.sender) {
+            throw 'You cannot add yourself as a friend.';
+        }
         
         const receiver = await Persistence.getUser(friendshipRequest.receiver);
         
@@ -55,6 +59,10 @@ class FriendService {
         if(!(friendshipConfirmation instanceof AddFriendshipConfirmation)) {
             console.error(`Argument friendshipConfirmation instantiated with ${friendshipConfirmation} is not of type AddFriendshipConfirmation.`);
             throw new TypeError(`Argument friendshipConfirmation instantiated with ${friendshipConfirmation} is not of type AddFriendshipConfirmation.`);
+        }
+
+        if(friendshipConfirmation.senderOfTheFriendshipRequest === friendshipConfirmation.receiverOfTheFriendshipRequest) {
+            throw 'You cannot confirm a friendhsip to yourself.';
         }
         
         const currentReceiver = await Persistence.getUser(friendshipConfirmation.senderOfTheFriendshipRequest);
@@ -84,6 +92,10 @@ class FriendService {
             console.error(`Argument friendshipRemoval instantiated with ${friendshipRemoval} is not of type RemoveFriendshipRequest.`);
             throw new TypeError(`Argument friendshipRemoval instantiated with ${friendshipRemoval} is not of type RemoveFriendshipRequest.`);
         }
+
+        if(friendshipRemoval.receiver === friendshipRemoval.sender) {
+            throw 'You cannot remove a friendhsip with yourself (actually you should not be able to have one).';
+        }
         
         friendshipRemoval.receiver = friendshipRemoval.receiver.split('@')[0];
         friendshipRemoval.sender = friendshipRemoval.sender.split('@')[0];
@@ -103,6 +115,10 @@ class FriendService {
             throw new TypeError(`Argument friendshipDenial instantiated with ${friendshipDenial} is not of type AddFriendshipDenial.`);
         }
         
+        if(friendshipDenial.receiverOfTheFriendshipRequest === friendshipDenial.senderOfTheFriendshipRequest) {
+            throw 'You cannot deny a friendhsip to yourself (actually you should not be able to have one such request).';
+        }
+
         friendshipDenial.receiverOfTheFriendshipRequest = friendshipDenial.receiverOfTheFriendshipRequest.split('@')[0];
         friendshipDenial.senderOfTheFriendshipRequest = friendshipDenial.senderOfTheFriendshipRequest.split('@')[0];
         

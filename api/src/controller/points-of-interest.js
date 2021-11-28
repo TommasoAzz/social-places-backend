@@ -1,27 +1,26 @@
 let express = require('express');
 let router = express.Router();
 const pointOfInterest = require('../service/point-of-interest');
-const auth = require('../service/auth');
 const AddPointOfInterestPoi = require('../model/request-body/add-point-of-interest-poi');
 const RemovePointOfInterest = require('../model/request-body/remove-point-of-interest');
 const APIError = require('../model/api-error');
 const AddPointOfInterest = require('../model/request-body/add-point-of-interest');
+const { validateApiCall } = require('../utils/validate-api-call');
+// eslint-disable-next-line no-unused-vars
+const PointOfInterest = require('../model/point-of-interest');
 
 router.get('/', async (req, res) => {
     const query = req.query;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != query.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${query.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${query.user}.`)).send();
+    const user = query.user + '';
+    const apiCallCheck = await validateApiCall(req.headers, user);
+    if(Object.keys(apiCallCheck).length === 2) {
+        res.status(apiCallCheck.code).json(apiCallCheck.error).send();
         return;
     }
 
+    /**
+     * @type Array<PointOfInterest>
+     */
     let pois;
     if(query.friend === undefined || query.friend === '') {
         pois = await pointOfInterest.getPOIsOfUser(user);
@@ -40,16 +39,10 @@ router.get('/', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     const body = req.body;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != body.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
+    const user = body.user + '';
+    const apiCallCheck = await validateApiCall(req.headers, user);
+    if(Object.keys(apiCallCheck).length === 2) {
+        res.status(apiCallCheck.code).json(apiCallCheck.error).send();
         return;
     }
 
@@ -81,16 +74,10 @@ router.post('/add', async (req, res) => {
 
 router.delete('/remove', async (req, res) => {
     const body = req.body;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != body.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
+    const user = body.user + '';
+    const apiCallCheck = await validateApiCall(req.headers, user);
+    if(Object.keys(apiCallCheck).length === 2) {
+        res.status(apiCallCheck.code).json(apiCallCheck.error).send();
         return;
     }
 

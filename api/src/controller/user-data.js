@@ -2,20 +2,14 @@ let express = require('express');
 let router = express.Router();
 
 const auth = require('../service/auth');
-const APIError = require('../model/api-error');
+const { validateApiCall } = require('../utils/validate-api-call');
 
 router.post('/notification-token', async (req, res) => {
     const body = req.body;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != body.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
+    const user = body.user + '';
+    const apiCallCheck = await validateApiCall(req.headers, user);
+    if(Object.keys(apiCallCheck).length === 2) {
+        res.status(apiCallCheck.code).json(apiCallCheck.error).send();
         return;
     }
 
@@ -27,16 +21,10 @@ router.post('/notification-token', async (req, res) => {
 
 router.post('/public-key', async (req, res) => {
     const body = req.body;
-    const token = auth.parseHeaders(req.headers);
-    if(token === null) {
-        console.error('> Status code 401 - Token not available.');
-        res.status(401).json(APIError.build('Token not available.')).send();
-        return;
-    }
-    let user = await auth.verifyToken(token);
-    if(user === null || user != body.user) {
-        console.error(`> Status code 403 - User from the authentication service is ${user} and that from query is ${body.user}.`);
-        res.status(403).json(APIError.build(`User from the authentication service is ${user} and that from query is ${body.user}.`)).send();
+    const user = body.user + '';
+    const apiCallCheck = await validateApiCall(req.headers, user);
+    if(Object.keys(apiCallCheck).length === 2) {
+        res.status(apiCallCheck.code).json(apiCallCheck.error).send();
         return;
     }
 
