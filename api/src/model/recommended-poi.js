@@ -4,13 +4,14 @@ const AddRecommendedPoi = require('./request-body/add-recommended-poi');
 
 class RecommendedPoi {
     /**
-     * Constructs a live event information object.
+     * Constructs an object that stores the point of interest with `markId` given
+     * recommended on date given as argument.
      * 
      * @param {string} id Identifier.
      * @param {string} markId recommended poi Identifier.
      * @param {number} notificatedDate Notification date in seconds
      */
-    constructor(id,markId, notificatedDate) {
+    constructor(id, markId, notificatedDate) {
         validatePrimitiveType(id, 'string');
         validatePrimitiveType(markId, 'string');
         validatePrimitiveType(notificatedDate, 'number');
@@ -22,12 +23,11 @@ class RecommendedPoi {
 
     /**
      * Constructs a recommended poi information object from an instance of `AddRecommendedPoi`.
-     * Field notificatedDate
      * 
      * @param {AddRecommendedPoi} addRecommendedPoi
      * @returns an instance of this class.
      */
-    static fromRecommendedPoi(addRecommendedPoi) {
+    static fromAddRecommendedPoi(addRecommendedPoi) {
         return new RecommendedPoi(
             '',
             addRecommendedPoi.markId,
@@ -36,9 +36,9 @@ class RecommendedPoi {
     }
 
     /**
-     * Return a plain JavaScript object representation of the object, without field `id`.
+     * Return a plain JavaScript object representation of the object.
      * 
-     * @returns a plain JavaScript object representation of the object, without field `id`.
+     * @returns a plain JavaScript object representation of the object.
      */
     toJsObject() {
         return {

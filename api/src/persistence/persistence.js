@@ -480,11 +480,12 @@ class Persistence {
             return null;
         }
         const personalRecommendedPoiReference = await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).add(rp.toJsObject());
+        rp.id = personalRecommendedPoiReference.id;
+        await this._connection.collection(`${this._usersDoc}/${user}/${this._personalRecommendedPoiDoc}`).doc(personalRecommendedPoiReference.id).update(rp.toJsObject());
 
         console.info(`Added Recommended poi for user ${user}, identifier: ${personalRecommendedPoiReference.id}.`);
 
         return personalRecommendedPoiReference.id;
-        
     }
 
     /**

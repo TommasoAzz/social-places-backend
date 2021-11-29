@@ -27,23 +27,22 @@ class RecommendationService {
         this._api_url = apiUrl + 'recommendation/';
     }
 
-
     /**
-         * Publishes a new live event.
-         * 
-         * @param {AddRecommendedPoi} recommendedPoi the new recommended Poi.
-         * @param {string} user the user that the personal recommended poi should be added.
-         * @returns the live event id.
-         */
-    static async addRecommendedPoi(recommendedPoi,user)  {
+     * Saves a new recommended point of interest.
+     * 
+     * @param {AddRecommendedPoi} recommendedPoi the new recommended Poi.
+     * @param {string} user the user that the personal recommended poi should be added.
+     * @returns {Promise<string>} the recommended point of interest id.
+     */
+    static async addRecommendedPoi(recommendedPoi, user)  {
         if(!(recommendedPoi instanceof AddRecommendedPoi)) {
             console.error(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
             throw new TypeError(`Argument recommendedPoi instantiated with ${recommendedPoi} is not of type AddRecommendedPoi.`);
         }
 
-        const recommendedPoiToAdd = RecommendedPoi.fromRecommendedPoi(recommendedPoi);
+        const recommendedPoiToAdd = RecommendedPoi.fromAddRecommendedPoi(recommendedPoi);
         
-        const rpId = await Persistence.addPersonalRecommededPoi(recommendedPoiToAdd,user);
+        const rpId = await Persistence.addPersonalRecommededPoi(recommendedPoiToAdd, user);
 
         return rpId;
     }
@@ -67,7 +66,7 @@ class RecommendationService {
              */
             const isPlaceValid = validity_result.body.result; // 1 (true) or 0 (false).
             
-            if (isPlaceValid === 1){
+            if (isPlaceValid === 1) {
                 const recommendedCategory = new RecommendedCategory(validationRequest.place_category);
 
                 const recommendationRequest = new RecommendationRequest(
@@ -81,15 +80,15 @@ class RecommendationService {
                 const suggestPointOfInterest = await this.getNearestPoiOfGivenCategoryOfUser(recommendedCategory, recommendationRequest);
                 
                 if (suggestPointOfInterest !== null) {
-                    const canNotify = await this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
+                    const canNotify = await this.canNotifyPoi(suggestPointOfInterest, recommendationRequest.user);
 
                     //poi can be notified so adding it to firebase
-                    if(canNotify){
-                        await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You are near to this place:','validity-recommendation');
+                    if(canNotify) {
+                        await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user, 'You are near to this place:', 'validity-recommendation');
                         
                         const notificationDate = Math.floor(Date.now() / 1000);
                         const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
-                        await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
+                        await this.addRecommendedPoi(addRecommendPoi, recommendationRequest.user);
                     }
                 }
             }
@@ -124,8 +123,9 @@ class RecommendationService {
                 const canNotify = await this.canNotifyPoi(suggestPointOfInterest,recommendationRequest.user);
                 
                 //in this case the poi should always notified thanks to getNearestPoiOfGivenCategory
-                if(canNotify){
-                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user,'You may be interested to this place:','place-recommendation');
+                if(canNotify) {
+                    await Persistence.notifySuggestionForPlace(suggestPointOfInterest, recommendationRequest.user, 'You may be interested to this place:', 'place-recommendation');
+
                     const notificationDate = Math.floor(Date.now() / 1000);
                     const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
                     await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
@@ -238,7 +238,7 @@ class RecommendationService {
         
         const alreadyRecommendedPoi = await Persistence.getPersonalRecommededPoi(user);
         const lat_lon_mapped = poisList
-            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase() && alreadyRecommendedPoi.findIndex((rp)=>rp.markId === poi.markId) === -1)
+            .filter((poi) => poi.type.toLowerCase() === recommendedCategory.place_category.toLowerCase() && alreadyRecommendedPoi.findIndex((rp) => rp.markId === poi.markId) === -1)
             // eslint-disable-next-line no-unused-vars
             .map((poi, _, __) => {
                 return {
@@ -277,7 +277,6 @@ class RecommendationService {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const oneHouerTimeStamp = 3600;
         for(const user of usersList) {
-
             const recommededPois = await Persistence.getPersonalRecommededPoi(user);
             
             for(const rp of recommededPois) {
@@ -301,7 +300,7 @@ class RecommendationService {
         const recommededPois = await Persistence.getPersonalRecommededPoi(user);
         const rp = recommededPois.filter((recommendedPoi) => recommendedPoi.markId === poi.markId);
         
-        if(rp.length == 0){
+        if(rp.length == 0) {
             return true;
         }
         
