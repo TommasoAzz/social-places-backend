@@ -89,8 +89,14 @@ class RecommendationService {
                         const notificationDate = Math.floor(Date.now() / 1000);
                         const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
                         await this.addRecommendedPoi(addRecommendPoi, recommendationRequest.user);
+                    } else {
+                        console.warn(`Point of interest with markId=${suggestPointOfInterest.markId} has already been recommended to ${validationRequest.user} less than an hour ago.`);
                     }
+                } else {
+                    console.warn(`In the area around the point with latitude=${validationRequest.latitude} and longitude=${validationRequest.longitude} has no points of interest for the user.`);
                 }
+            } else {
+                console.warn(`Not recommending anything since the place_category=${validationRequest.place_category} is not advisable now.`);
             }
             return isPlaceValid === 1;
         } catch (error) {
@@ -116,7 +122,7 @@ class RecommendationService {
 
             const body = response.body;
             const recommendedCategory = new RecommendedCategory(body.place_category);
-
+            console.info('Found category ' + recommendedCategory);
             const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {
@@ -129,8 +135,11 @@ class RecommendationService {
                     const notificationDate = Math.floor(Date.now() / 1000);
                     const addRecommendPoi = new AddRecommendedPoi(suggestPointOfInterest.markId, notificationDate);
                     await this.addRecommendedPoi(addRecommendPoi,recommendationRequest.user);
-                }
-                
+                } else {
+                    console.warn(`Point of interest with markId=${suggestPointOfInterest.markId} has already been recommended to ${recommendationRequest.user} less than an hour ago.`);
+                }                
+            } else {
+                console.warn(`Not found any point of interest of place_category=${body.place_category} near the user=${recommendationRequest.user}.`);
             }
 
             return recommendedCategory;
