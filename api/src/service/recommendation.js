@@ -122,7 +122,7 @@ class RecommendationService {
 
             const body = response.body;
             const recommendedCategory = new RecommendedCategory(body.place_category);
-            console.info('Found category ' + recommendedCategory);
+            console.info(`Found category ${recommendedCategory.place_category}`);
             const suggestPointOfInterest = await this.getNearestPoiOfGivenCategory(recommendedCategory, recommendationRequest);
 
             if (suggestPointOfInterest !== null) {

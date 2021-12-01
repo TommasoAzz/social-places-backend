@@ -415,7 +415,7 @@ class Persistence {
         const pushToken = userDoc.data().notificationToken;
 
         const title = 'Model retrained!';
-        const body = `Thanks for improving our model, new accuracy: ${(recommendationAccuracy.accuracy * 100).toPrecision(4)}`;
+        const body = `Thanks for improving our model, new accuracy: ${(recommendationAccuracy.accuracy * 100).toPrecision(4)}%.`;
 
         const messageId = await createAndSendNotification(pushToken, title, body, 'model-retrained', {}, user);
         console.info(`Notified user ${user} because the model retrained and get accuracy: ${recommendationAccuracy.accuracy} and correct sample: ${recommendationAccuracy.correct_samples}. Sent notification, identifier: ${messageId}.`);
