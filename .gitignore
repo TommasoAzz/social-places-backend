@@ -7,6 +7,9 @@ context_aware/contextaware/classifier/__pycache__
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
+### Apple
+.DS_Store
+
 ### Node ###
 # Logs
 logs
